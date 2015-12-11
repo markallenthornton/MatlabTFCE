@@ -17,6 +17,9 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Matlab temporary files
+*.asv
+
 # =========================
 # Operating System Files
 # =========================
