@@ -1,4 +1,4 @@
-function [tfced] = tfce_transform(img,H,E,C,ndh)
+function [tfced] = tfce_transform(img,varargin)
 %TFCE_TRANSFORM performs threshold free cluster enhancement on image
 %   [tfced] = tfce_transform(img,H,E,C,ndh) performs threshold free cluster
 %   enhancement on the image 'img' as per Smith & Nichols (2009).
@@ -10,6 +10,26 @@ function [tfced] = tfce_transform(img,H,E,C,ndh)
 %   The H & E default parameter settings match FSL's randomise/fslmaths.
 %   The C default setting matches FSL's ramdomise default setting. To
 %   match SPM's default cluster forming, use 18 instead.
+
+% setting defaults
+H = 2;
+E = .5;
+C = 6;
+ndh = 100;
+
+% overriding defaults as necessary
+if nargin > 1
+    H = varargin{1};
+end
+if nargin > 2
+    E = varargin{2};
+end
+if nargin > 3
+    C = varargin{3};
+end
+if nargin > 4
+    ndh = varargin{4};
+end
 
 % set cluster thresholds
 threshs = linspace(0,max(img(:)),ndh+2);
