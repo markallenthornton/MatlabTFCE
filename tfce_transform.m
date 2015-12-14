@@ -5,65 +5,47 @@ function [tfced] = tfce_transform(img,H,E,C,ndh)
 %   -- H height exponent, default = 2
 %   -- E extent exponent, default = 0.5
 %   -- C connectivity, default = 6 (6 = surface, 18 = edge, 26 = corner)
-%   -- ndh step number for cluster formation; more steps will be more
-%   precise but slower to compute.
+%   -- ndh step number for cluster formation, default = 100
+%   More steps will be more precise but will require more time and memory.
 %   The H & E default parameter settings match FSL's randomise/fslmaths.
 %   The C default setting matches FSL's ramdomise default setting. To
 %   match SPM's default cluster forming, use 18 instead.
 
-%% identify occupied voxels and find indices
-posvoxels = (img>0);
-posinds = find(posvoxels);
-bsize = size(brainvoxels);
-pnum = length(posinds);
-nvox = length(img(:));
-
-%% generate neighborhood 
-neighborhood = [1 0 0; -1 0 0; 0 1 0; 0 -1 0; 0 0 1; 0 0 -1];
-if C > 6
-    neighborhood = [neighborhood;
-                    1 1 0; 1 -1 0; 1 0 1; 1 0 -1;
-                    -1 1 0; -1 -1 0; -1 0 1; -1 0 -1;
-                    0 1 1; 0 1 -1; 0 -1 1; 0 -1 -1]; 
-end
-if C > 18
-        neighborhood = [neighborhood;
-                    1 1 1; 1 1 -1; 1 -1 1; 1 -1 -1;
-                    -1 -1 -1; -1 1 -1; -1 -1 1; -1 1 1]; 
-end
-
-%% finding clusters
 % set cluster thresholds
-threshs = linspace(0,max(img),ndh+1);
-threshs = threshs(1:ndh);
+threshs = linspace(0,max(img(:)),ndh+2);
+threshs = threshs(2:(ndh+1));
+dh = diff(threshs);
+dh = dh(1);
 
-pxl = {};
+% find positive voxels (greater than first threshold)
+nvox = length(img(:));
+posvoxels = (img>=threshs(1));
+posinds = find(posvoxels);
+pnum = length(posinds);
+
+% find connected components
+clusts = NaN(pnum,ndh);
 for h = 1:ndh
-    cc = bwconncomp(img,C);
+    cc = bwconncomp(img>=threshs(h),C);
+    curclust = NaN(nvox,1);
     for c = 1:cc.NumObjects
-        
+        curclust(cc.PixelIdxList{c}) = c;
+        clusts(:,h) = curclust(posinds);
     end
 end
 
-% use bwconncomp to segment the image multiple times at different positive
-% thresholds (e.g. 0:.1:max(img))
-
-%% run through voxels
-for v = 1:vnum
-    
-    % define voxel of interest and extract value
-    vcent = brainxyz(v,:);
-    vval = img(vcent);
-    
-    % define immediate neighbor indices
-    neigbhors = repmat(brainxyz,C,1) + neighborhood;
-    ninds = ind2sub(bsize,neighbors);
-
-    % obtain discrete neighbor thresholds
-    nthreshs = img(ninds);
-    nthreshs = [nthreshs(nthreshs>0 & nthreshs<vval) vval];
-    
-    % step through adjacent, building up multicluster on the weigh
+% run through positive voxels
+tfced = img;
+posvals = img(posinds);
+for p = 1:pnum
+    nsupthr = sum(posvals(p)>threshs);
+    thrvals = NaN(nsupthr,1);
+    for nh = 1:nsupthr
+        cid = clusts(p,nh);
+        extent = sum(clusts(:,nh)==cid);
+        thrvals(nh) = (extent^E)*(dh^H);
+    end
+    tfced(posinds(p)) = sum(thrvals);
 end
 
 end
