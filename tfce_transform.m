@@ -1,6 +1,6 @@
 function [tfced] = tfce_transform(img,H,E,C,ndh)
 %TFCE_TRANSFORM performs threshold free cluster enhancement on image
-%   [tfced] = tfce_transform(img,H,E,C) performs a threshold free cluster
+%   [tfced] = tfce_transform(img,H,E,C,ndh) performs threshold free cluster
 %   enhancement on the image 'img' as per Smith & Nichols (2009).
 %   -- H height exponent, default = 2
 %   -- E extent exponent, default = 0.5
@@ -37,6 +37,7 @@ end
 % run through positive voxels
 tfced = img;
 posvals = img(posinds);
+tic
 for p = 1:pnum
     nsupthr = sum(posvals(p)>threshs);
     thrvals = NaN(nsupthr,1);
