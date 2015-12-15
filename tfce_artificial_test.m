@@ -108,3 +108,27 @@ figure
 plot(pcorr_nostepdown(:),pcorr(:),'.')
 hold on
 plot(0:1,0:1,'r')
+
+%% compare one- and two-tailed tests
+img = zeros([40 40 20]);
+img(21:25,21:25,9:12) = 2;
+img(16:20,16:20,9:12) = 5;
+imgs = repmat(img,[1 1 1 15])+randn([40,40,20 15]);
+
+tic;pcorr1 = tfce_permutation(imgs,1000); toc
+tic;pcorr2 = tfce_permutation_twotailed(imgs,1000); toc
+
+figure
+subplot(2,2,1)
+imagesc(pcorr1(:,:,10),[0 1]);
+subplot(2,2,2)
+imagesc(pcorr1(:,:,10)<.05,[0 1]);
+subplot(2,2,3)
+imagesc(pcorr2(:,:,10),[0 1]);
+subplot(2,2,4)
+imagesc(pcorr2(:,:,10)<.05,[0 1]);
+
+figure
+plot(pcorr1(:),pcorr2(:),'.')
+hold on
+plot(0:1,0:1,'r')

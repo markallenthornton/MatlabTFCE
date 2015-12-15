@@ -1,6 +1,6 @@
-function [pcorr] = tfce_permutation_nostepdown(imgs,varargin)
-%TFCE_PERMUTATION_NOSTEPDOWN a version of tfce_permutation without the
-% stepdown functionality. Implemented only for comparison.
+function [pcorr] = tfce_permutation_twotailed(imgs,varargin)
+%TFCE_PERMUTATION_TWOTAILED two-tailed version of tfce_permutation.m
+% See that file for details.
 
 % set defaults
 nperm = 1000;
@@ -19,6 +19,7 @@ implicitmask = ~isnan(truestat);
 
 % sort p-values for comparison
 tvals = truestat(implicitmask);
+[stvals,tind] = sort(abs(tvals),1,'descend');
 nvox = length(tvals);
 
 % extract occupied voxels for permutation test
@@ -45,13 +46,25 @@ for p = 1:nperm
     
     % calculate permutation t-values
     rstats = mean(roccimgs,2)./(std(roccimgs,0,2)/sqrt(nsub));
+    rtvals = abs(rstats(tind));
+    
+    % calculate maxima
+    maxima = zeros(nvox,1);
+    maxima(end) = rtvals(end);
+    for v = fliplr(1:(nvox-1))
+        maxima(v) = max(rtvals(v),maxima(v+1));
+    end
     
     % compare maxima to t-values and increment as appropriate
-    exceedances = exceedances + (max(rstats) >= tvals);
+    curexceeds = maxima >= stvals;
+    failed = find(curexceeds);
+    curexceeds(failed:end) = 1;
+    exceedances = exceedances + curexceeds;
 end
 
 % create corrected p-value image
-corrected = exceedances./nperm;
+corrected = NaN(nvox,1);
+corrected(tind) = exceedances./nperm;
 pcorr = ones(bsize);
 pcorr(implicitmask) = corrected;
 
