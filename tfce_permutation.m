@@ -72,10 +72,13 @@ for p = 1:nperm
     end
     
     % compare maxima to t-values and increment as appropriate
-    exceedances = exceedances + (maxima >= stvals);
+    curexceeds = maxima >= stvals;
+    failed = find(curexceeds);
+    curexceeds(failed:end) = 1;
+    exceedances = exceedances + curexceeds;
 end
 
-% initialize corrected p-value image
+% create corrected p-value image
 corrected = NaN(nvox,1);
 corrected(tind) = exceedances./nperm;
 pcorr = ones(bsize);

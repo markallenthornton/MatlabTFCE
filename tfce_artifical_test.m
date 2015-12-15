@@ -36,12 +36,9 @@ plot(tfced)
 
 %% test 3: permutation on small tfced brain
 % simulate images
-tic
 img = zeros([40 40 20]);
-img(11:30,11:30,6:15) = randn([20,20,10]);
-img(16:25,16:25,9:12) = img(16:25,16:25,9:12)+1;
+img(16:25,16:25,9:12) = 1;
 imgs = repmat(img,[1 1 1 15])+randn([40,40,20 15]);
-toc
 
 % perform tfce
 tic
@@ -65,3 +62,49 @@ subplot(2,2,3)
 imagesc(pcorr_tfced(:,:,10),[0 1]);
 subplot(2,2,4)
 imagesc(pcorr_tfced(:,:,10)<.05,[0 1]);
+
+%% compare with & without stepdown
+tic;pcorr_tfced = tfce_permutation(tfced,1000); toc
+tic;pcorr_tfced_nostepdown = tfce_permutation_nostepdown(tfced,1000); toc
+
+figure
+subplot(2,2,1)
+imagesc(pcorr_tfced_nostepdown(:,:,10),[0 1]);
+subplot(2,2,2)
+imagesc(pcorr_tfced_nostepdown(:,:,10)<.05,[0 1]);
+subplot(2,2,3)
+imagesc(pcorr_tfced(:,:,10),[0 1]);
+subplot(2,2,4)
+imagesc(pcorr_tfced(:,:,10)<.05,[0 1]);
+
+figure
+plot(pcorr_tfced_nostepdown(:),pcorr_tfced(:),'.')
+hold on
+plot(0:1,0:1,'r')
+
+%% compare with & without stepdown (uneven effect sizes)
+img = zeros([40 40 20]);
+img(21:25,21:25,9:12) = 2;
+img(16:20,16:20,9:12) = 5;
+imgs = repmat(img,[1 1 1 15])+randn([40,40,20 15]);
+
+tic;pcorr = tfce_permutation(imgs,1000); toc
+tic;pcorr_nostepdown = tfce_permutation_nostepdown(imgs,1000); toc
+
+figure
+subplot(2,2,1)
+imagesc(pcorr_nostepdown(:,:,10),[0 1]);
+subplot(2,2,2)
+imagesc(pcorr_nostepdown(:,:,10)<.05,[0 1]);
+subplot(2,2,3)
+imagesc(pcorr(:,:,10),[0 1]);
+subplot(2,2,4)
+imagesc(pcorr(:,:,10)<.05,[0 1]);
+
+figure
+imagesc(pcorr(:,:,10)-pcorr_nostepdown(:,:,10));colorbar
+
+figure
+plot(pcorr_nostepdown(:),pcorr(:),'.')
+hold on
+plot(0:1,0:1,'r')
