@@ -9,7 +9,8 @@ function [tfced] = tfce_transform(img,varargin)
 %   More steps will be more precise but will require more time and memory.
 %   The H & E default parameter settings match FSL's randomise/fslmaths.
 %   The C default setting matches FSL's ramdomise default setting. To
-%   match SPM's default cluster forming, use 18 instead.
+%   match SPM's default cluster forming, use 18 instead. The transformed
+%   image is returend as 'tfced'.
 
 % setting defaults
 H = 2;
@@ -57,7 +58,6 @@ end
 % run through positive voxels
 tfced = img;
 posvals = img(posinds);
-tic
 for p = 1:pnum
     nsupthr = sum(posvals(p)>threshs);
     thrvals = NaN(nsupthr,1);
