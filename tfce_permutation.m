@@ -29,7 +29,7 @@ bsize = size(imgs);
 nsub = bsize(4);
 bsize = bsize(1:3);
 
-% calculate trut t-statistic image
+% calculate true t-statistic image
 truestat = mean(imgs,4)./(std(imgs,0,4)/sqrt(nsub));
 implicitmask = ~isnan(truestat);
 
@@ -44,8 +44,6 @@ for s = 1:nsub
     curimg = imgs(:,:,:,s);
     occimgs(:,s) = curimg(implicitmask);
 end
-
-% preallocate maxinde
 
 % cycle through permutations
 exceedances = zeros(nvox,1);
