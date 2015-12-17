@@ -43,34 +43,20 @@ dh = dh(1);
 
 % find positive voxels (greater than first threshold)
 nvox = length(img(:));
-posvoxels = (img>=threshs(1));
-posinds = find(posvoxels);
-pnum = length(posinds);
 
 % find connected components
-clusts = NaN(pnum,ndh);
+clustsize = zeros(nvox,ndh);
 for h = 1:ndh
     cc = bwconncomp(img>=threshs(h),C);
-    curclust = NaN(nvox,1);
+    voxpercc = cellfun(@numel,cc.PixelIdxList);
     for c = 1:cc.NumObjects
-        curclust(cc.PixelIdxList{c}) = c;
-        clusts(:,h) = curclust(posinds);
+        clustsize(cc.PixelIdxList{c},h) = voxpercc(c);
     end
 end
 
-% run through positive voxels
+% calculate TFCE values and insert
 tfced = img;
-posvals = img(posinds);
-for p = 1:pnum
-    nsupthr = sum(posvals(p)>threshs);
-    thrvals = NaN(nsupthr,1);
-    for nh = 1:nsupthr
-        cid = clusts(p,nh);
-        extent = sum(clusts(:,nh)==cid);
-        thrvals(nh) = (extent^E)*(dh^H);
-    end
-    tfced(posinds(p)) = sum(thrvals);
-end
+tfced(:) = sum((clustsize.^E).*(dh^H),2);
 
 end
 
