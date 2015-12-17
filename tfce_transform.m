@@ -2,6 +2,7 @@ function [tfced] = tfce_transform(img,varargin)
 %TFCE_TRANSFORM performs threshold free cluster enhancement on image
 %   [tfced] = tfce_transform(img,H,E,C,ndh) performs threshold free cluster
 %   enhancement on the image 'img' as per Smith & Nichols (2009).
+%   -- img the 3D image to be transformed
 %   -- H height exponent, default = 2
 %   -- E extent exponent, default = 0.5
 %   -- C connectivity, default = 6 (6 = surface, 18 = edge, 26 = corner)
@@ -10,7 +11,9 @@ function [tfced] = tfce_transform(img,varargin)
 %   The H & E default parameter settings match FSL's randomise/fslmaths.
 %   The C default setting matches FSL's ramdomise default setting. To
 %   match SPM's default cluster forming, use 18 instead. The transformed
-%   image is returend as 'tfced'.
+%   image is returned as 'tfced'. Note that for most purposes, the wrapper
+%   function tfce_transform_twotailed should be applied to the image to
+%   ensure that results are not biased in the positive direction.
 
 % setting defaults
 H = 2;

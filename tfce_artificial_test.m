@@ -132,3 +132,23 @@ figure
 plot(pcorr1(:),pcorr2(:),'.')
 hold on
 plot(0:1,0:1,'r')
+
+%% two-tailed activation and deactivation
+img = zeros([40 40 20]);
+img(21:25,21:25,9:12) = -2;
+img(16:20,16:20,9:12) = 2;
+imgs = repmat(img,[1 1 1 15])+randn([40,40,20 15]);
+tic
+
+tic;[pcorr_pos,pcorr_neg] = tfce_permutation_twotailed(imgs,1000); toc
+
+figure
+subplot(2,2,1)
+imagesc(pcorr_pos(:,:,10),[0 1]);
+subplot(2,2,2)
+imagesc(pcorr_pos(:,:,10)<.05,[0 1]);
+subplot(2,2,3)
+imagesc(pcorr_neg(:,:,10),[0 1]);
+subplot(2,2,4)
+imagesc(pcorr_neg(:,:,10)<.05,[0 1]);
+

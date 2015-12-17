@@ -1,6 +1,8 @@
-function [pcorr] = tfce_permutation_twotailed(imgs,varargin)
+function [pcorr_pos,pcorr_neg] = tfce_permutation_twotailed(imgs,varargin)
 %TFCE_PERMUTATION_TWOTAILED two-tailed version of tfce_permutation.m
-% See that file for details.
+% See that file for details. Note that two corrected images are returned -
+% one for effects in the positive direction and the other for effects in
+% the negative direction.
 
 % set defaults
 nperm = 1000;
@@ -67,6 +69,13 @@ corrected = NaN(nvox,1);
 corrected(tind) = exceedances./nperm;
 pcorr = ones(bsize);
 pcorr(implicitmask) = corrected;
+
+% split into positive and negative effects
+pos = truestat>0;
+pcorr_pos = pcorr;
+pcorr_pos(~pos) = 1;
+pcorr_neg = pcorr;
+pcorr_neg(pos) = 1;
 
 end
 

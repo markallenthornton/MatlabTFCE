@@ -5,7 +5,8 @@ function [pcorr] = tfce_correlation(imgs,covariate,varargin)
 % maximize power.
 %
 %   Arguments:
-%   imgs -- a 4D (x,y,z,subject) matrix of images
+%   imgs -- a 4D (x,y,z,subject) matrix of images. Like tfce_permutation,
+%   these should have had tfce_transform applied already.
 %   covariate -- a vector of length = number of subjects containing values
 %   to be correlated with brain activity
 %   nperm -- number of permutations to perform. More permutations yield
