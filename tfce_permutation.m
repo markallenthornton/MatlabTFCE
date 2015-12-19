@@ -30,15 +30,20 @@ nsub = bsize(4);
 bsize = bsize(1:3);
 
 % calculate true t-statistic image
-truestat = mean(imgs,4)./(std(imgs,0,4)./sqrt(nsub));
+truestat = mean(imgs,4)./(std(imgs,0,4)/sqrt(nsub));
 implicitmask = ~isnan(truestat);
-tfcetrue = tfce_transform(truestat);
-
 
 % sort p-values for comparison
-tvals = tfcetrue(implicitmask);
+tvals = truestat(implicitmask);
 [stvals,tind] = sort(tvals,1,'descend');
 nvox = length(tvals);
+
+% extract occupied voxels for permutation test
+occimgs = NaN(nvox,nsub);
+for s = 1:nsub
+    curimg = imgs(:,:,:,s);
+    occimgs(:,s) = curimg(implicitmask);
+end
 
 % cycle through permutations
 exceedances = zeros(nvox,1);
@@ -46,18 +51,16 @@ for p = 1:nperm
     
     % permute signs
     relabeling = randsample([-1 1],nsub,'true');
-    rimgs = imgs;
+    roccimgs = occimgs;
     for s = 1:nsub
         if relabeling(s) == -1;
-            rimgs(:,:,:,s) = -imgs(:,:,:,s);
+            roccimgs(:,s) = -occimgs(:,s);
         end
     end
     
     % calculate permutation t-values
-    rstat = mean(rimgs,4)./(std(rimgs,0,4)./sqrt(nsub));
-    rtfce = tfce_transform(rstat);
-    rtvals = rtfce(implicitmask);
-    rtvals = rtvals(tind);
+    rstats = mean(roccimgs,2)./(std(roccimgs,0,2)/sqrt(nsub));
+    rtvals = rstats(tind);
     
     % calculate maxima
     maxima = zeros(nvox,1);
