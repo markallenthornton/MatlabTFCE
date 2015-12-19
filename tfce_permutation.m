@@ -30,7 +30,8 @@ nsub = bsize(4);
 bsize = bsize(1:3);
 
 % calculate true t-statistic image
-truestat = mean(imgs,4)./(std(imgs,0,4)/sqrt(nsub));
+%truestat = mean(imgs,4)./(std(imgs,0,4)/sqrt(nsub));
+truestat = mean(imgs,4);
 implicitmask = ~isnan(truestat);
 
 % sort p-values for comparison
@@ -59,9 +60,10 @@ for p = 1:nperm
     end
     
     % calculate permutation t-values
-    rstats = mean(roccimgs,2)./(std(roccimgs,0,2)/sqrt(nsub));
+    %rstats = mean(roccimgs,2)./(std(roccimgs,0,2)/sqrt(nsub));
+    rstats = mean(roccimgs,2);
     rtvals = rstats(tind);
-    
+
     % calculate maxima
     maxima = zeros(nvox,1);
     maxima(end) = rtvals(end);

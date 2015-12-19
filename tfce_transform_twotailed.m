@@ -35,9 +35,9 @@ if nargin > 4
 end
 
 % call tfce on both sides of the image
-tfced_pos = tfce_transform(img,H,E,C,ndh);
-tfced_neg = tfce_transform(-img,H,E,C,ndh);
-tfced = tfced_pos - tfced_neg;
+tfced = tfce_transform(img,H,E,C,ndh);
+tfced = tfce_transform(-tfced,H,E,C,ndh);
+tfced = -tfced;
 
 end
 

@@ -55,8 +55,10 @@ for h = 1:ndh
 end
 
 % calculate TFCE values and insert
-tfced = img;
-tfced(:) = sum((clustsize.^E).*(dh^H),2);
+vals = sum((clustsize.^E).*(dh^H),2);
+tfced = NaN(size(img));
+tfced(:) = vals;
+tfced(img<0) = img(img<0);
 
 end
 

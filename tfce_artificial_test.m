@@ -44,7 +44,7 @@ imgs = repmat(img,[1 1 1 15])+randn([40,40,20 15]);
 tic
 tfced = NaN(size(imgs));
 for s = 1:15
-    tfced(:,:,:,s) = tfce_transform(imgs(:,:,:,s),2,.5,6,10);
+    tfced(:,:,:,s) = tfce_transform(imgs(:,:,:,s),2,.5,6,100);
 end
 toc
 
@@ -62,7 +62,45 @@ subplot(2,2,3)
 imagesc(pcorr_tfced(:,:,10),[0 1]);
 subplot(2,2,4)
 imagesc(pcorr_tfced(:,:,10)<.05,[0 1]);
+%% permutation histograms
+x = randn(30,3);
+x(:,1) = x(:,1)+5;
+x(:,2) = x(:,2)+1;
+mvec = zeros(1000,3);
+for i = 1:1000
+    relabeling = randsample([-1 1],30,'true');
+    rx = x;
+    for j = 1:30
+        if relabeling(j) == -1
+          rx(j,:) = -rx(j,:);
+        end
+    end
+    %mvec(i,:) = mean(rx);
+    mvec(i,:) = mean(rx)./(std(rx)/sqrt(30));
+end
+subplot(3,1,1)
+hist(mvec(:,1))
+xlim([-3 3])
+subplot(3,1,2)
+hist(mvec(:,2))
+xlim([-3 3])
+subplot(3,1,3)
+hist(mvec(:,3))
+xlim([-3 3])
 
+mean(mvec(:)>mean(x(:,2)))
+protected = mvec(:,2:3);
+mean(protected(:)>mean(x(:,2)))
+%% testing max timing
+vals = randn(1000,1);
+tic
+for i = 1:999
+    max(vals(1:2));
+end
+toc
+tic
+max(vals);
+toc
 %% compare with & without stepdown
 tic;pcorr_tfced = tfce_permutation(tfced,1000); toc
 tic;pcorr_tfced_nostepdown = tfce_permutation_nostepdown(tfced,1000); toc
