@@ -37,11 +37,11 @@ plot(tfced)
 %% test 3: permutation on small tfced brain
 % simulate images
 img = zeros([40 40 20]);
-img(16:25,16:25,9:12) = 3;
+img(16:25,16:25,9:12) = 2;
 imgs = repmat(img,[1 1 1 15])+randn([40,40,20 15]);
 
 % perform permutation
-tic;pcorr= tfce_permutation(imgs,1000); toc
+tic;pcorr= tfce_permutation(imgs,100); toc
 
 % visualize slice
 figure

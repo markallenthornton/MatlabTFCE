@@ -36,7 +36,8 @@ tfcetrue = tfce_transform(truestat);
 
 
 % sort p-values for comparison
-tvals = tfcetrue(implicitmask);
+%tvals = tfcetrue(implicitmask);
+tvals = truestat(implicitmask);
 [stvals,tind] = sort(tvals,1,'descend');
 nvox = length(tvals);
 
@@ -55,8 +56,9 @@ for p = 1:nperm
     
     % calculate permutation t-values
     rstat = mean(rimgs,4)./(std(rimgs,0,4)./sqrt(nsub));
-    rtfce = tfce_transform(rstat);
-    rtvals = rtfce(implicitmask);
+%     rtfce = tfce_transform(rstat);
+%     rtvals = rtfce(implicitmask);
+    rtvals = rstat(implicitmask);
     rtvals = rtvals(tind);
     
     % calculate maxima
