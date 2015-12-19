@@ -29,8 +29,7 @@ bsize = size(imgs);
 nsub = bsize(4);
 bsize = bsize(1:3);
 
-% calculate true t-statistic image
-%truestat = mean(imgs,4)./(std(imgs,0,4)/sqrt(nsub));
+% calculate true mean image
 truestat = mean(imgs,4);
 implicitmask = ~isnan(truestat);
 
@@ -59,8 +58,7 @@ for p = 1:nperm
         end
     end
     
-    % calculate permutation t-values
-    %rstats = mean(roccimgs,2)./(std(roccimgs,0,2)/sqrt(nsub));
+    % calculate permutation means
     rstats = mean(roccimgs,2);
     rtvals = rstats(tind);
 
