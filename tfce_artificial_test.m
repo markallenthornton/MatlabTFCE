@@ -37,32 +37,18 @@ plot(tfced)
 %% test 3: permutation on small tfced brain
 % simulate images
 img = zeros([40 40 20]);
-img(16:25,16:25,9:12) = 1;
+img(16:25,16:25,9:12) = 3;
 imgs = repmat(img,[1 1 1 15])+randn([40,40,20 15]);
 
-% perform tfce
-tic
-tfced = NaN(size(imgs));
-for s = 1:15
-    tfced(:,:,:,s) = tfce_transform(imgs(:,:,:,s),2,.5,6,10);
-end
-toc
-
 % perform permutation
-tic;pcorr_voxelwise = tfce_permutation(imgs,100); toc
-tic;pcorr_tfced = tfce_permutation(tfced,100); toc
+tic;pcorr= tfce_permutation(imgs,1000); toc
 
 % visualize slice
 figure
-subplot(2,2,1)
-imagesc(pcorr_voxelwise(:,:,10),[0 1]);
-subplot(2,2,2)
-imagesc(pcorr_voxelwise(:,:,10)<.05,[0 1]);
-subplot(2,2,3)
-imagesc(pcorr_tfced(:,:,10),[0 1]);
-subplot(2,2,4)
-imagesc(pcorr_tfced(:,:,10)<.05,[0 1]);
-
+subplot(1,2,1)
+imagesc(pcorr(:,:,10),[0 1]);
+subplot(1,2,2)
+imagesc(pcorr(:,:,10)<.05,[0 1]);
 %% compare with & without stepdown
 tic;pcorr_tfced = tfce_permutation(tfced,1000); toc
 tic;pcorr_tfced_nostepdown = tfce_permutation_nostepdown(tfced,1000); toc
