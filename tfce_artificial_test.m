@@ -154,7 +154,7 @@ img(16:20,16:20,9:12) = 5;
 imgs = repmat(img,[1 1 1 15])+randn([40,40,20 15]);
 
 tic;pcorr1 = tfce_permutation(imgs,1000); toc
-tic;pcorr2 = tfce_permutation_twotailed(imgs,1000); toc
+tic;[pcorr_pos pcor_neg]= tfce_permutation_twotailed(imgs,1000); toc
 
 figure
 subplot(2,2,1)
@@ -162,19 +162,19 @@ imagesc(pcorr1(:,:,10),[0 1]);
 subplot(2,2,2)
 imagesc(pcorr1(:,:,10)<.05,[0 1]);
 subplot(2,2,3)
-imagesc(pcorr2(:,:,10),[0 1]);
+imagesc(pcorr_pos(:,:,10),[0 1]);
 subplot(2,2,4)
-imagesc(pcorr2(:,:,10)<.05,[0 1]);
+imagesc(pcorr_pos(:,:,10)<.05,[0 1]);
 
 figure
-plot(pcorr1(:),pcorr2(:),'.')
+plot(pcorr1(:),pcorr_pos(:),'.')
 hold on
 plot(0:1,0:1,'r')
 
 %% two-tailed activation and deactivation
 img = zeros([40 40 20]);
-img(21:25,21:25,9:12) = -2;
-img(16:20,16:20,9:12) = 2;
+img(21:25,21:25,9:12) = -1;
+img(16:20,16:20,9:12) = 1;
 imgs = repmat(img,[1 1 1 15])+randn([40,40,20 15]);
 tic
 
