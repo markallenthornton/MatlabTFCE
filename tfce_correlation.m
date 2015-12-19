@@ -30,7 +30,7 @@ bsize = bsize(1:3);
 
 % calculate implicit mask
 sumimg = sum(imgs,4);
-implicitmask = ~isnan(sumimg) & suming~=0;
+implicitmask = ~isnan(sumimg) & sumimg~=0;
 nvox = sum(implicitmask(:));
 
 % extract occupied voxels for permutation test
@@ -77,4 +77,4 @@ corrected(cind) = exceedances./nperm;
 pcorr = ones(bsize);
 pcorr(implicitmask) = corrected;
 
-ends
+end
