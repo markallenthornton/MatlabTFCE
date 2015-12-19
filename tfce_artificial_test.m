@@ -192,20 +192,20 @@ imagesc(pcorr_neg(:,:,10)<.05,[0 1]);
 
 %% correlation test case 1
 covariate = zeros([1,1,1,30]);
-covariate(:) = 1:30;
+covariate(:) = (1:30)-30;
 imgs = randn([20 20 10 30])*10;
 imgs(6:10,6:10,3:5,1:30) = repmat(covariate,[5,5,3,1]) + imgs(6:10,6:10,3:5,1:30);
 
-% perform tfce
+% perform tfce (must be two-tailed even if test one-tailed)
 tic
 tfced = NaN(size(imgs));
 for s = 1:30
-    tfced(:,:,:,s) = tfce_transform(imgs(:,:,:,s),2,.5,6,100);
+    tfced(:,:,:,s) = tfce_transform_twotailed(imgs(:,:,:,s),2,.5,6,100);
 end
 toc
 
 tic;pcorr_imgs = tfce_correlation(imgs,covariate,1000);toc
-tic;pcorr_tfced = tfce_correlation(imgs,covariate,1000);toc
+tic;pcorr_tfced = tfce_correlation(tfced,covariate,1000);toc
 
 figure
 subplot(2,2,1)
@@ -217,6 +217,7 @@ imagesc(pcorr_tfced(:,:,4),[0 1]);
 subplot(2,2,4)
 imagesc(pcorr_tfced(:,:,4)<.05,[0 1]);
 
+figure
 plot(pcorr_imgs(:),pcorr_tfced(:),'.')
 hold on
 plot(0:1,0:1,'r')

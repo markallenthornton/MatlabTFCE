@@ -53,7 +53,7 @@ for p = 1:nperm
     % permute covariates
     rcov = randsample(covariate,nsub);
     
-    % calculate permutation t-values
+    % calculate permutation correlations
     rstats = corr(occimgs,rcov);
     rcvals = rstats(cind);
     
