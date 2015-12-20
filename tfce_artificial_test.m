@@ -221,3 +221,68 @@ figure
 plot(pcorr_imgs(:),pcorr_tfced(:),'.')
 hold on
 plot(0:1,0:1,'r')
+
+%% correlation test case 2 (two-tailed)
+covariate = zeros([1,1,1,30]);
+covariate(:) = (1:30)-30;
+imgs = randn([20 20 10 30])*10;
+imgs(6:10,6:10,3:5,1:30) = repmat(covariate,[5,5,3,1]) + imgs(6:10,6:10,3:5,1:30);
+imgs(11:15,11:15,3:5,1:30) = repmat(-covariate,[5,5,3,1]) + imgs(11:15,11:15,3:5,1:30);
+
+% perform tfce
+tic
+tfced = NaN(size(imgs));
+for s = 1:30
+    tfced(:,:,:,s) = tfce_transform_twotailed(imgs(:,:,:,s),2,.5,6,100);
+end
+toc
+
+tic;[pcorr_pos,pcorr_neg] = tfce_correlation_twotailed(tfced,covariate,1000);toc
+
+figure
+subplot(2,2,1)
+imagesc(pcorr_pos(:,:,4),[0 1]);
+subplot(2,2,2)
+imagesc(pcorr_pos(:,:,4)<.05,[0 1]);
+subplot(2,2,3)
+imagesc(pcorr_neg(:,:,4),[0 1]);
+subplot(2,2,4)
+imagesc(pcorr_neg(:,:,4)<.05,[0 1]);
+
+%% independent samples test
+img = zeros([40 40 20]);
+img(21:25,21:25,9:12) = 2;
+imgs1 = repmat(img,[1 1 1 15])+randn([40,40,20 15]);
+img = zeros([40 40 20]);
+img(16:20,16:20,9:12) = 2;
+imgs2 = repmat(img,[1 1 1 20])+randn([40,40,20 20]);
+
+% perform tfce
+tic
+tfced1 = NaN(size(imgs1));
+for i = 1:15
+    tfced1(:,:,:,i) = tfce_transform_twotailed(imgs1(:,:,:,i),2,.5,6,100);
+end
+tfced2 = NaN(size(imgs2));
+for i = 1:20
+    tfced2(:,:,:,i) = tfce_transform_twotailed(imgs2(:,:,:,i),2,.5,6,100);
+end
+toc
+
+% perform permutation tests
+tic;pcorr = tfce_permutation_independent(tfced1,tfced2,100);toc
+tic;[pcorr_pos,pcorr_neg] = tfce_permutation_independent_twotailed(tfced1,tfced2,100);toc
+
+% visualize results
+subplot(3,2,1)
+imagesc(pcorr(:,:,10),[0,1])
+subplot(3,2,2)
+imagesc(pcorr(:,:,10)<.05,[0,1])
+subplot(3,2,3)
+imagesc(pcorr_pos(:,:,10),[0,1])
+subplot(3,2,4)
+imagesc(pcorr_pos(:,:,10)<.05,[0,1])
+subplot(3,2,5)
+imagesc(pcorr_neg(:,:,10),[0,1])
+subplot(3,2,6)
+imagesc(pcorr_neg(:,:,10)<.05,[0,1])

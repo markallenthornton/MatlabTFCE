@@ -1,7 +1,8 @@
-function [varargout] = tfce_permutation_paired_ttest(imgs1,imgs2,varargin)
+function [varargout] = tfce_permutation_paired(imgs1,imgs2,varargin)
 % TFCE_PERMUTATION_PAIRED_TTEST convenience wrapper for performing paired
 % t-tests on imaging data via calculating image difference and executing
 % one-sample t-tests on said difference.
+%
 % imgs1 -- measure 1 images
 % imgs2 -- measure 2 images
 % nperm -- number of permutations (default 1000)
@@ -12,7 +13,7 @@ function [varargout] = tfce_permutation_paired_ttest(imgs1,imgs2,varargin)
 % ndh -- step number for cluster formation, default = 100
 %
 % For 1-tailed tests, returned pcorr, for two-tailed tests, returns
-% pcorr_pos and pcorr_neg.
+% pcorr_pos and pcorr_neg. The alternative hypothesis is imgs1>imgs2.
 
 % set defaults
 nperm = 1000;
@@ -45,15 +46,13 @@ end
 % calculate image difference
 imgsdiff = imgs1-imgs2;
 
-% perform tfce and permutation (note that image should be transformed in
-% two-tailed manner even for one-tailed test)
-tfced = tfce_transform_twotailed(imgsdiff,H,E,C,ndh);
-
-% perform appropriate permutation test
+% perform tfce and appropriate permutation test
 if tails == 1
+    tfced = tfce_transform(imgsdiff,H,E,C,ndh);
     pcorr = tfce_permutation(tfced,nperm);
     varargout{1} = pcorr;
 else
+    tfced = tfce_transform_twotailed(imgsdiff,H,E,C,ndh);
     [pcorr_pos,pcorr_neg] = tfce_permutation_twotailed(tfced,nperm);
     varargout{1} = pcorr_pos;
     varargout{1} = pcorr_neg;
