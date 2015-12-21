@@ -4,7 +4,7 @@ function [varargout] = stepdown_tfce(analysis,tails,imgs,varargin)
 % functionality in the package can be accessed via this function or the gui
 % input version. This stepdown_tfce and the functions it calls are all
 % standalone - i.e. they do not rely on functions from other packages. In
-% contrast, stepdown_tfce_gui uses (included) functions from SPM12 and the 
+% contrast, stepdown_tfce_gui uses (included) functions from the 
 % 'NIfTI and ANALYZE tools' package to facilitate file io and the gui.
 % Using stepdown_tfce directly allows for headless sessions and more
 % customization of the file io.
