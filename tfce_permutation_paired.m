@@ -55,7 +55,7 @@ else
     tfced = tfce_transform_twotailed(imgsdiff,H,E,C,ndh);
     [pcorr_pos,pcorr_neg] = tfce_permutation_twotailed(tfced,nperm);
     varargout{1} = pcorr_pos;
-    varargout{1} = pcorr_neg;
+    varargout{2} = pcorr_neg;
 end
 
 end

@@ -13,7 +13,8 @@ function [pcorr] = tfce_permutation_independent(imgs1,imgs2,varargin)
 %
 %   Arguments:
 %   imgs1 -- images from group 1 with dimensions x,y,z,nsubject1
-%   imgs1 -- images from group 2 with dimensions x,y,z,nsubject2
+%   imgs2 -- images from group 2 with dimensions x,y,z,nsubject2
+%   nperm -- number of permutations (1000 default)
 %
 %   Output:
 %   pcorr -- image of p-values, corrected for multiple comparisons

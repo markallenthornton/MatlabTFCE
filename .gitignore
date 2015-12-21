@@ -20,6 +20,9 @@ $RECYCLE.BIN/
 # Matlab temporary files
 *.asv
 
+# local test files
+tfce_artifical_test.m
+
 # =========================
 # Operating System Files
 # =========================
