@@ -11,9 +11,7 @@ function [tfced] = tfce_transform(img,varargin)
 %   The H & E default parameter settings match FSL's randomise/fslmaths.
 %   The C default setting matches FSL's ramdomise default setting. To
 %   match SPM's default cluster forming, use 18 instead. The transformed
-%   image is returned as 'tfced'. Note that for most purposes, the wrapper
-%   function tfce_transform_twotailed should be applied to the image to
-%   ensure that results are not biased in the positive direction.
+%   image is returned as 'tfced'.
 
 % setting defaults
 H = 2;

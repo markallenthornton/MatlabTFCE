@@ -1,8 +1,7 @@
 function [tfced] = tfce_transform_twotailed(img,varargin)
 %TFCE_TRANSFORM_TWOTAILED convenience wrapper for tfce_transform
 %   Performs threshold free cluster enhancement of both positive and
-%   negative sides of an image. In general, this should always be applied
-%   to avoid biasing results towards positive tail.
+%   negative sides of an image.
 %   -- img the 3D image to be transformed
 %   -- H height exponent, default = 2
 %   -- E extent exponent, default = 0.5

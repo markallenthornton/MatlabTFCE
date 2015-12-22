@@ -42,9 +42,11 @@ end
 
 % calculate true correlation image
 truestat = corr(occimgs,covariate);
-
-% sort p-values for comparison
-[scvals,cind] = sort(truestat,1,'descend');
+if tails == 1
+	cvals = truestat;
+else
+	cvals = abs(truestat);
+end
 
 % cycle through permutations
 exceedances = zeros(nvox,1);
@@ -55,26 +57,37 @@ for p = 1:nperm
     
     % calculate permutation correlations
     rstats = corr(occimgs,rcov);
-    rcvals = rstats(cind);
-    
-    % calculate maxima
-    maxima = zeros(nvox,1);
-    maxima(end) = rcvals(end);
-    for v = fliplr(1:(nvox-1))
-        maxima(v) = max(rcvals(v),maxima(v+1));
-    end
+	if tails == 1
+		rcvals = rstats;
+	else
+		rcvals = abs(rstats);
+	end
     
     % compare maxima to t-values and increment as appropriate
-    curexceeds = maxima >= scvals;
-    failed = find(curexceeds);
-    curexceeds(failed:end) = 1;
+    curexceeds = max(rstats) >= cvals;
     exceedances = exceedances + curexceeds;
 end
 
 % create corrected p-value image
-corrected = NaN(nvox,1);
-corrected(cind) = exceedances./nperm;
+corrected = exceedances./nperm;
 pcorr = ones(bsize);
 pcorr(implicitmask) = corrected;
+
+% split into positive and negative effects (if needed)
+if tails == 2
+	pos = truestat>0;
+	pcorr_pos = pcorr;
+	pcorr_pos(~pos) = 1;
+	pcorr_neg = pcorr;
+	pcorr_neg(pos) = 1;
+end
+
+% assigne output to varargout
+if tails == 1
+	varargout{1} = pcorr;
+else
+	varargout{1} = pcorr_pos;
+	varargout{2} = pcorr_neg;
+end
 
 end

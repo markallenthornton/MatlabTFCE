@@ -1,10 +1,10 @@
-function [varargout] = stepdown_tfce(analysis,tails,imgs,varargin)
-%STEPDOWN_TFCE general wrapper for specifying analyses. Receives arguments
-% from stepdown_tfce_gui.m if specificed manually. All intended
+function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
+%MATLAB_TFCE general wrapper for specifying analyses. Receives arguments
+% from matlab_tfce_gui.m if specificed manually. All intended
 % functionality in the package can be accessed via this function or the gui
 % input version. This stepdown_tfce and the functions it calls are all
 % standalone - i.e. they do not rely on functions from other packages. In
-% contrast, stepdown_tfce_gui uses (included) functions from the 
+% contrast, matlab_tfce_gui uses (included) functions from the 
 % 'NIfTI and ANALYZE tools' package to facilitate file io and the gui.
 % Using stepdown_tfce directly allows for headless sessions and more
 % customization of the file io.
@@ -37,9 +37,9 @@ function [varargout] = stepdown_tfce(analysis,tails,imgs,varargin)
 % statistical suppression that large effects otherwise exert with the
 % maximal statistic approach.
 %
-% [varargout] = stepdown_tfce(analysis,tails,imgs,imgs2,covariate,nperm,H,E,C,ndh)
-% [pcorr] = stepdown_tfce(analysis,1,imgs,imgs2,covariate,nperm,H,E,C,ndh)
-% [pcorr_pos,pcorr_neg] = stepdown_tfce(analysis,2,imgs,imgs2,covariate,nperm,H,E,C,ndh)
+% [varargout] = matlab_tfce(analysis,tails,imgs,imgs2,covariate,nperm,H,E,C,ndh)
+% [pcorr] = matlab_tfce(analysis,1,imgs,imgs2,covariate,nperm,H,E,C,ndh)
+% [pcorr_pos,pcorr_neg] = matlab_tfce(analysis,2,imgs,imgs2,covariate,nperm,H,E,C,ndh)
 %
 % Arguments:
 %
