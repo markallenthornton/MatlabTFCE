@@ -167,6 +167,10 @@ if strcmp(analysis,'correlation')
     end
 end
 
+%% perform TFCE
+if strcmp(analysis,'independent')
+end
+
 %% analysis calls
 % select appropriate analysis
 switch analysis
@@ -206,7 +210,7 @@ switch analysis
     
     % covariate-img correlation (R>0)
     case 'correlation'
-        tfced = tfce_transform_twotailed(imgs,H,E,C,ndh);
+        tfced = matlab_tfce_transform_twotailed(imgs,H,E,C,ndh);
         if tails == 1
             pcorr = matlab_tfce_correlation(tfced,covariate,tails,nperm);
         else

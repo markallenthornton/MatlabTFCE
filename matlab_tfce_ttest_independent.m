@@ -27,7 +27,7 @@ bsize = bsize(1:3);
 nsub = nsub1+nsub2;
 
 % calculate true mean image
-truestat = (mean(imgs1,4)-mean(imgs2,4))/sqrt(var(imgs1,0,4)/nsub1+var(imgs2,0,4)/nsub1);
+truestat = (mean(imgs1,4)-mean(imgs2,4))./sqrt(var(imgs1,0,4)/nsub1+var(imgs2,0,4)/nsub1);
 implicitmask = ~isnan(truestat);
 
 % p-values for comparison
@@ -56,7 +56,7 @@ for p = 1:nperm
     rimgs2 = occimgs(:,relabeling==2);
     
     % calculate permutation means
-    rstats = (mean(rimgs1,2)-mean(rimgs2,2))/sqrt(var(rimgs1,0,2)/nsub1+var(rimgs2,0,2)/nsub2);
+    rstats = (mean(rimgs1,2)-mean(rimgs2,2))./sqrt(var(rimgs1,0,2)/nsub1+var(rimgs2,0,2)/nsub2);
     
     % compare maxima to t-values and increment as appropriate
     if tails == 1
