@@ -1,14 +1,13 @@
-function [varargout] = matlab_tfce_correlation(imgs,covariate,varargin)
-% TFCE_CORRELATION computes threshold free cluster enhancement for a an
+function [varargout] = matlab_tfce_correlation(imgs,covariate,tails,nperm)
+% MATLAB_TFCE_CORRELATION computes TFCE corrected p-values for
 % individual difference correlation between a covariate and brain activity.
-% The maximal statistic technique is augmented with sequential stepdown to
-% maximize power.
 %
 %   Arguments:
 %   imgs -- a 4D (x,y,z,subject) matrix of images. Like tfce_permutation,
 %   these should have had tfce_transform applied already.
 %   covariate -- a vector of length = number of subjects containing values
 %   to be correlated with brain activity
+%	tails -- 1 or 2 tailed test
 %   nperm -- number of permutations to perform. More permutations yield
 %   more precise correct p-values.
 %
@@ -61,7 +60,7 @@ for p = 1:nperm
 	end
     
     % compare maxima to t-values and increment as appropriate
-    curexceeds = max(rstats) >= cvals;
+    curexceeds = max(rcvals) >= cvals;
     exceedances = exceedances + curexceeds;
 end
 

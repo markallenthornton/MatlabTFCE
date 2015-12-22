@@ -1,9 +1,9 @@
-function [varargout] = matlab_tfce_ttest_independent(imgs1,imgs2,tails,varargin)
-%TFCE_PERMUTATION_INDEPENDENT tests means difference, independent samples
-%   [varargout] = tfce_permutation_independent(imgs1,imgs2,nperm) performs
+function [varargout] = matlab_tfce_ttest_independent(imgs1,imgs2,tails,nperm)
+%MATLAB_TFCE_TTEST_INDEPENDENT tests means difference, independent samples
+%   [varargout] = matlab_tfce_ttest_independent(imgs1,imgs2,tails,nperm)
 %   Independent (two-sample) t-tests. The alternative hypothesis is 
-%   imgs1>imgs2. Maximal statistics from tests on permuted data are 
-%   compared with statistics in the original data.
+%   imgs1>imgs2. Maximal t-statistics from tests on permuted data are 
+%   compared with t-sstatistics in the original data.
 %
 %   Arguments:
 %   imgs1 -- images from group 1 with dimensions x,y,z,nsubject1

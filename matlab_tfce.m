@@ -6,7 +6,7 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 % standalone - i.e. they do not rely on functions from other packages. In
 % contrast, matlab_tfce_gui uses (included) functions from the 
 % 'NIfTI and ANALYZE tools' package to facilitate file io and the gui.
-% Using stepdown_tfce directly allows for headless sessions and more
+% Using matlab_tfce directly allows for headless sessions and more
 % customization of the file io.
 %
 % This package offers a standalone implemetation of multiple comparison
@@ -15,7 +15,7 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 % statistics to the maximal statistics obtained from repeating the analysis
 % with randomized data. See Nichols & Holmes (2002) for a detailed
 % treatment of this approach. 
-
+%
 % The maximal statistic technique is combined
 % with the threshold free cluster enhancement (TFCE) transformation due to
 % Smith & Nichols (2009), which obviates the need for arbitrary voxelwise
@@ -23,19 +23,7 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 % p-values for all voxels. Although some spatial specifity is lost
 % relative to purely voxelwise approach, this approach, like cluster
 % corrections, is substantially less conservative due to the fact that
-% capitalize on spatial dependency in the data. 
-
-% Finally, the comparison between
-% actual voxelwise statistics and permuted versions is accomplished via a
-% sequential testing procedure (stepdown) as described by Holmes, Blair,
-% Watson, and Ford (1996) with an algorithm due to Westfall and Young
-% (1993). This stepdown technique less conservative than the typical
-% maximal statistic permutation approach while entailing no additional
-% assumptions (analogous to Holm corrections advantage over the Bonferroni
-% correction). It is particularly helpful for detecting smaller effects in
-% the presence of larger effects, thus preventing the effective
-% statistical suppression that large effects otherwise exert with the
-% maximal statistic approach.
+% it capitalizes on spatial dependency in the data. 
 %
 % [varargout] = matlab_tfce(analysis,tails,imgs,imgs2,covariate,nperm,H,E,C,ndh)
 % [pcorr] = matlab_tfce(analysis,1,imgs,imgs2,covariate,nperm,H,E,C,ndh)
@@ -46,7 +34,7 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 % analysis -- type of analysis to perform. Options include:
 %   -- 'onesample' -- tests one sample hypothesis mean > 0
 %   -- 'paired' -- paired (dependent samples) test mean(imgs) > mean(imgs2)
-%   -- 'twosample' -- independent (two sample) test mean(imgs) > mean(imgs2)
+%   -- 'independent' -- independent (two sample) test mean(imgs) > mean(imgs2)
 %   -- 'correlation' -- correlation across subjects of imgs with covariate
 %
 % tails -- specify a 1 or 2 tailed test (unidirectional or bidirectional)
@@ -57,7 +45,7 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 %
 % Optional arguments (can supply [] to skip):
 %
-% imgs2 -- a second 4D matrix as above, required for paired and twosample
+% imgs2 -- a second 4D matrix as above, required for paired and independent
 % analysis options. Must have same xyz dimensions as imgs, and if the
 % analysis is paired, subject number must match as well.
 %
@@ -74,6 +62,11 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 % C -- connectivity, default = 6 (6 = surface, 18 = edge, 26 = corner)
 %
 % ndh -- step number for cluster formation, default = 100
+%
+%   More steps will be more precise but will require more time and memory.
+%   The H & E default parameter settings match FSL's randomise/fslmaths.
+%   The C default setting matches FSL's ramdomise default setting. To
+%   match SPM's default cluster forming, use 18 instead.
 %
 % Output: 
 % If tails == 1, a single output image with the same xyz dimensions as imgs
@@ -142,14 +135,14 @@ end
 if ~isempty(imgs2)
     imgs1 = imgs;
     bsize2 = size(imgs2);
-    if ~(strcmp(analysis,'twosample') || strcmp(analysis,'paired'))
+    if ~(strcmp(analysis,'independent') || strcmp(analysis,'paired'))
         warning(['The analysis ' analysis ' ignores the imgs2 argument']);
     end
     if sum(bsize(1:3) == bsize(1:3)) ~= 3
         error('XYZ dimensions of imgs and imgs2 do not match');
     end
 else
-    if (strcmp(analysis,'twosample') || strcmp(analysis,'paired'))
+    if (strcmp(analysis,'independent') || strcmp(analysis,'paired'))
         error('The imgs2 argument must be specified for this analysis type.');
     end
 end
@@ -181,40 +174,43 @@ switch analysis
     % one sample test (mean > 0)
     case 'onesample'
         if tails == 1
-            tfced = tfce_transform(imgs,H,E,C,ndh);
-            pcorr = tfce_permutation(tfced,nperm);
+            tfced = matlab_tfce_transform(imgs,H,E,C,ndh);
+            pcorr = matlab_tfce_ttest_onesample(tfced,tails,nperm);
         else
-            tfced = tfce_transform_twotailed(imgs,H,E,C,ndh);
-            [pcorr_pos,pcorr_neg]= tfce_permutation_twotailed(tfced,nperm);  
+            tfced = matlab_tfce_transform_twotailed(imgs,H,E,C,ndh);
+            [pcorr_pos,pcorr_neg]= matlab_tfce_ttest_onesample(tfced,tails,nperm); 
         end
     
     % paired (repeated measures) test (imgs1>imgs2)
     case 'paired'
+        imgs = imgs1-imgs2;
         if tails == 1
-            pcorr = tfce_permutation_paired(imgs1,imgs2,nperm,tails,H,E,C,ndh);
+            tfced = matlab_tfce_transform(imgs,H,E,C,ndh);
+            pcorr = matlab_tfce_ttest_onesample(tfced,tails,nperm);
         else
-            [pcorr_pos,pcorr_neg]=tfce_permutation_paired(imgs1,imgs2,nperm,tails,H,E,C,ndh);
+            tfced = matlab_tfce_transform_twotailed(imgs,H,E,C,ndh);
+            [pcorr_pos,pcorr_neg]= matlab_tfce_ttest_onesample(tfced,tails,nperm); 
         end
     
-    % two (independent) samples test (imgs1>imgs2)
-    case 'twosample'
+    % independent (two sample) samples test (imgs1>imgs2)
+    case 'independent'
         if tails == 1
-            tfced1 = tfce_transform(imgs1,H,E,C,ndh);
-            tfced2 = tfce_transform(imgs2,H,E,C,ndh);
-            pcorr = tfce_permutation_independent(tfced1,tfced2,nperm);
+            tfced1 = matlab_tfce_transform(imgs1,H,E,C,ndh);
+            tfced2 = matlab_tfce_transform(imgs2,H,E,C,ndh);
+            pcorr = matlab_tfce_ttest_independent(tfced1,tfced2,tails,nperm);
         else
-            tfced1 = tfce_transform_twotailed(imgs1,H,E,C,ndh);
-            tfced2 = tfce_transform_twotailed(imgs2,H,E,C,ndh);
-            [pcorr_pos,pcorr_neg] = tfce_permutation_independent_twotailed(tfced1,tfced2,nperm);
+            tfced1 = matlab_tfce_transform_twotailed(imgs1,H,E,C,ndh);
+            tfced2 = matlab_tfce_transform_twotailed(imgs2,H,E,C,ndh);
+            [pcorr_pos,pcorr_neg] = matlab_tfce_ttest_independent(tfced1,tfced2,tails,nperm);
         end
     
     % covariate-img correlation (R>0)
     case 'correlation'
         tfced = tfce_transform_twotailed(imgs,H,E,C,ndh);
         if tails == 1
-            pcorr = tfce_correlation(tfced,covariate,nperm);
+            pcorr = matlab_tfce_correlation(tfced,covariate,tails,nperm);
         else
-            [pcorr_pos,pcorr_neg] = tfce_correlation_twotailed(tfced,covariate,nperm);
+            [pcorr_pos,pcorr_neg] = matlab_tfce_correlation(tfced,covariate,tails,nperm);
         end
         
     % unrecognized analysis input

@@ -1,9 +1,9 @@
-function [varargout] = matlab_tfce_ttest_onesample(imgs,tails,varargin)
-%TFCE_PERMUTATION performs stepdown maximal statistic permutation testing
-%   [varargout] = tfce_permutation(imgs,nperm) corrects a one-sample,
-%   one-tailed mean comparison (>0) with multiple comparisons correct 
-%   via a permutation sprocedure (random sign flipping). Maximal means of
-%   permuted data are compared with means in the unshuffled original data.
+function [varargout] = matlab_tfce_ttest_onesample(imgs,tails,nperm)
+%MATLAB_TFCE_TTEST_ONESAMPLE performs maximal statistic permutation testing
+%   [varargout] = matlab_tfce_ttest_onesample(imgs,tails,nperm) corrects
+%   a one-sample t-test (mean > 0) for multiple comparisons via a 
+%   permutation procedure (random sign flipping). Maximal t-stats of
+%   permuted data are compared with t-stats in the unshuffled data.
 %
 %   Arguments:
 %   imgs -- a 4D (x,y,z,subject) matrix of images
