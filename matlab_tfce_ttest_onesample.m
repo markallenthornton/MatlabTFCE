@@ -1,6 +1,6 @@
-function [varargout] = tfce_permutation(imgs,tails,varargin)
+function [varargout] = matlab_tfce_ttest_onesample(imgs,tails,varargin)
 %TFCE_PERMUTATION performs stepdown maximal statistic permutation testing
-%   [pcorr] = tfce_permutation(imgs,nperm) corrects a one-sample,
+%   [varargout] = tfce_permutation(imgs,nperm) corrects a one-sample,
 %   one-tailed mean comparison (>0) with multiple comparisons correct 
 %   via a permutation sprocedure (random sign flipping). Maximal means of
 %   permuted data are compared with means in the unshuffled original data.
@@ -31,10 +31,10 @@ nsub = bsize(4);
 bsize = bsize(1:3);
 
 % calculate true mean image
-truestat = mean(imgs,4)./(std(imgs,1,4)./sqrt(nsub));
+truestat = mean(imgs,4)./(std(imgs,0,4)./sqrt(nsub));
 implicitmask = ~isnan(truestat);
 
-% sort p-values for comparison
+% p-values for comparison
 tvals = truestat(implicitmask);
 if tails == 2
 	tvals=abs(tvals);
@@ -62,7 +62,7 @@ for p = 1:nperm
     end
     
     % calculate permutation means
-    rstats =  mean(roccimgs,2)./(std(roccimgs,1,2)./sqrt(nsub));
+    rstats =  mean(roccimgs,2)./(std(roccimgs,0,2)./sqrt(nsub));
 
     % compare maxima to t-values and increment as appropriate
 	if tails == 1

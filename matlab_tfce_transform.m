@@ -1,4 +1,4 @@
-function [tfced] = tfce_transform(img,varargin)
+function [tfced] = matlab_tfce_transform(img,varargin)
 %TFCE_TRANSFORM performs threshold free cluster enhancement on image
 %   [tfced] = tfce_transform(img,H,E,C,ndh) performs threshold free cluster
 %   enhancement on the image 'img' as per Smith & Nichols (2009).

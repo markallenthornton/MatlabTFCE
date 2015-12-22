@@ -1,4 +1,4 @@
-function [tfced] = tfce_transform_twotailed(img,varargin)
+function [tfced] = matlab_tfce_transform_twotailed(img,varargin)
 %TFCE_TRANSFORM_TWOTAILED convenience wrapper for tfce_transform
 %   Performs threshold free cluster enhancement of both positive and
 %   negative sides of an image.

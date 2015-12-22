@@ -1,4 +1,4 @@
-function [pcorr] = tfce_correlation(imgs,covariate,varargin)
+function [pcorr] = matlab_tfce_correlation(imgs,covariate,varargin)
 % TFCE_CORRELATION computes threshold free cluster enhancement for a an
 % individual difference correlation between a covariate and brain activity.
 % The maximal statistic technique is augmented with sequential stepdown to
