@@ -9,8 +9,7 @@ function [varargout] = matlab_tfce_ttest_onesample(imgs,tails,varargin)
 %   imgs -- a 4D (x,y,z,subject) matrix of images
 %	tails -- 1 or 2 tailed test
 %   nperm -- number of permutations to perform. More permutations yield
-%   more precise correct p-values. Default set to 1000, but 10000 suggested
-%   for publication purposes.
+%   more precise correct p-values.
 %
 %   Output:
 %	If tails == 1:
@@ -18,12 +17,6 @@ function [varargout] = matlab_tfce_ttest_onesample(imgs,tails,varargin)
 %	If tails == 2:
 %	pcorr_pos -- corrected p-values for positive effects
 %	pcorr_neg -- corrected p-values for negative effects
-
-% set defaults
-nperm = 1000;
-if nargin > 2
-    nperm = varargin{1};
-end
 
 % calculate matrix size
 bsize = size(imgs);

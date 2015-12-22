@@ -1,4 +1,4 @@
-function [pcorr] = matlab_tfce_correlation(imgs,covariate,varargin)
+function [varargout] = matlab_tfce_correlation(imgs,covariate,varargin)
 % TFCE_CORRELATION computes threshold free cluster enhancement for a an
 % individual difference correlation between a covariate and brain activity.
 % The maximal statistic technique is augmented with sequential stepdown to
@@ -10,17 +10,14 @@ function [pcorr] = matlab_tfce_correlation(imgs,covariate,varargin)
 %   covariate -- a vector of length = number of subjects containing values
 %   to be correlated with brain activity
 %   nperm -- number of permutations to perform. More permutations yield
-%   more precise correct p-values. Default set to 1000, but 10000 suggested
-%   for publication purposes.
+%   more precise correct p-values.
 %
 %   Output:
+%	If tails == 1:
 %   pcorr -- wholebrain map of corrected p-values
-
-% set defaults
-nperm = 1000;
-if nargin > 2
-    nperm = varargin{1};
-end
+%	If tails == 2:
+%	pcorr_pos -- corrected p-values for positive effects
+%	pcorr_neg -- corrected p-values for negative effects
 
 % calculate matrix size
 bsize = size(imgs);
@@ -75,7 +72,9 @@ pcorr(implicitmask) = corrected;
 
 % split into positive and negative effects (if needed)
 if tails == 2
-	pos = truestat>0;
+    btruestat = NaN(bsize);
+    btruestat(implicitmask) = truestat;
+	pos = btruestat>0;
 	pcorr_pos = pcorr;
 	pcorr_pos(~pos) = 1;
 	pcorr_neg = pcorr;

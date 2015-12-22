@@ -1,21 +1,15 @@
 function [varargout] = matlab_tfce_ttest_independent(imgs1,imgs2,tails,varargin)
 %TFCE_PERMUTATION_INDEPENDENT tests means difference, independent samples
-%   [varargout] = tfce_permutation_independent(imgs1,imgs2,nperm) performs a
-%   comparison of the voxelwise image means of two independent groups (as
-%   in an independent t-test). This version performs 1-tailed tests. The 
-%   alternative hypothesis is imgs1>imgs2. Maximal statistics from tests on
-%   permuted data are compared with statistics in the original
-%   data using a stepdown procedure described by Holmes, Blair, Watson, and
-%   Ford (1996) with an implementation due to Westfall and Young (1993).
-%   This procedure is analogous to the more commonly known sequentially
-%   rejective test due to Holm (1979). Note that independent sample tests
-%   require homogeneity of variance.
+%   [varargout] = tfce_permutation_independent(imgs1,imgs2,nperm) performs
+%   Independent (two-sample) t-tests. The alternative hypothesis is 
+%   imgs1>imgs2. Maximal statistics from tests on permuted data are 
+%   compared with statistics in the original data.
 %
 %   Arguments:
 %   imgs1 -- images from group 1 with dimensions x,y,z,nsubject1
 %   imgs2 -- images from group 2 with dimensions x,y,z,nsubject2
 %	tails -- 1 or 2 tailed test
-%   nperm -- number of permutations (1000 default)
+%   nperm -- number of permutations
 %
 %   Output:
 %	If tails == 1:
@@ -23,13 +17,6 @@ function [varargout] = matlab_tfce_ttest_independent(imgs1,imgs2,tails,varargin)
 %	If tails == 2:
 %	pcorr_pos -- corrected p-values for positive effects
 %	pcorr_neg -- corrected p-values for negative effects
-
-
-% set defaults
-nperm = 1000;
-if nargin > 1
-    nperm = varargin{1};
-end
 
 % calculate matrix size
 bsize = size(imgs1);
