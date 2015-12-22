@@ -168,7 +168,20 @@ if strcmp(analysis,'correlation')
 end
 
 %% perform TFCE
-if strcmp(analysis,'independent')
+if (strcmp(analysis,'independent') || strcmp(analysis,'paired'))
+    tfced1 = NaN(bsize);
+    tfced2 = NaN(bsize);
+    for i = 1:bsize(4)
+        tfced1(:,:,:,i) = matlab_tfce_transform_twotailed(imgs1(:,:,:,i),H,E,C,ndh);
+    end
+    for i = 1:bsize2(4)
+        tfced2(:,:,:,i) = matlab_tfce_transform_twotailed(imgs2(:,:,:,i),H,E,C,ndh);
+    end
+else
+    tfced = NaN(bsize);
+    for i = 1:bsize(4)
+        tfced(:,:,:,i) = matlab_tfce_transform_twotailed(imgs(:,:,:,i),H,E,C,ndh);
+    end
 end
 
 %% analysis calls
@@ -178,39 +191,30 @@ switch analysis
     % one sample test (mean > 0)
     case 'onesample'
         if tails == 1
-            tfced = matlab_tfce_transform(imgs,H,E,C,ndh);
             pcorr = matlab_tfce_ttest_onesample(tfced,tails,nperm);
         else
-            tfced = matlab_tfce_transform_twotailed(imgs,H,E,C,ndh);
             [pcorr_pos,pcorr_neg]= matlab_tfce_ttest_onesample(tfced,tails,nperm); 
         end
     
     % paired (repeated measures) test (imgs1>imgs2)
     case 'paired'
-        imgs = imgs1-imgs2;
+        tfced = tfced1-tfced2;
         if tails == 1
-            tfced = matlab_tfce_transform(imgs,H,E,C,ndh);
             pcorr = matlab_tfce_ttest_onesample(tfced,tails,nperm);
         else
-            tfced = matlab_tfce_transform_twotailed(imgs,H,E,C,ndh);
             [pcorr_pos,pcorr_neg]= matlab_tfce_ttest_onesample(tfced,tails,nperm); 
         end
     
     % independent (two sample) samples test (imgs1>imgs2)
     case 'independent'
         if tails == 1
-            tfced1 = matlab_tfce_transform(imgs1,H,E,C,ndh);
-            tfced2 = matlab_tfce_transform(imgs2,H,E,C,ndh);
             pcorr = matlab_tfce_ttest_independent(tfced1,tfced2,tails,nperm);
         else
-            tfced1 = matlab_tfce_transform_twotailed(imgs1,H,E,C,ndh);
-            tfced2 = matlab_tfce_transform_twotailed(imgs2,H,E,C,ndh);
             [pcorr_pos,pcorr_neg] = matlab_tfce_ttest_independent(tfced1,tfced2,tails,nperm);
         end
     
     % covariate-img correlation (R>0)
     case 'correlation'
-        tfced = matlab_tfce_transform_twotailed(imgs,H,E,C,ndh);
         if tails == 1
             pcorr = matlab_tfce_correlation(tfced,covariate,tails,nperm);
         else
