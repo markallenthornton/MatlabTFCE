@@ -1,5 +1,5 @@
-function [varargout] = matlab_tfce_ttest_onesample(imgs,tails,nperm)
-%MATLAB_TFCE_TTEST_ONESAMPLE performs maximal statistic permutation testing
+function [varargout] = stepdown_tfce_ttest_onesample(imgs,tails,nperm,H,E,C,dh)
+%STEPDOWN_TFCE_TTEST_ONESAMPLE performs maximal statistic permutation testing
 %   [varargout] = matlab_tfce_ttest_onesample(imgs,tails,nperm) corrects
 %   a one-sample t-test (mean > 0) for multiple comparisons via a 
 %   permutation procedure (random sign flipping). Maximal t-stats of
@@ -23,9 +23,18 @@ bsize = size(imgs);
 nsub = bsize(4);
 bsize = bsize(1:3);
 
+% set tranform function
+if tails == 1
+    transform = @stepdown_tfce_transform;
+else
+    transform = @stepdown_tfce_transform_twotailed;
+end
+
 % calculate true mean image
 truestat = mean(imgs,4)./(std(imgs,0,4)./sqrt(nsub));
 implicitmask = ~isnan(truestat);
+truestat = transform(truestat,H,E,C,dh);
+
 
 % p-values for comparison
 tvals = truestat(implicitmask);
@@ -54,10 +63,14 @@ for p = 1:nperm
         end
     end
     
-    % calculate permutation means
+    % calculate permutation statistic
     rstats =  mean(roccimgs,2)./(std(roccimgs,0,2)./sqrt(nsub));
+    rbrain = zeros(bsize);
+    rbrain(implicitmask) = rstats;
+    rbrain = transform(rbrain,H,E,C,dh);
+    rstats = rbrain(implicitmask);
 
-    % compare maxima to t-values and increment as appropriate
+    % compare maxima to true statistic and increment as appropriate
 	if tails == 1
 		curexceeds = max(rstats) >= tvals;
 	else

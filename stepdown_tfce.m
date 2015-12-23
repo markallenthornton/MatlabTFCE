@@ -25,9 +25,9 @@ function [varargout] = stepdown_tfce(analysis,tails,imgs,varargin)
 % corrections, is substantially less conservative due to the fact that
 % it capitalizes on spatial dependency in the data. 
 %
-% [varargout] = stepdown_tfce(analysis,tails,imgs,imgs2,covariate,nperm,H,E,C,ndh)
-% [pcorr] = stepdown_tfce(analysis,1,imgs,imgs2,covariate,nperm,H,E,C,ndh)
-% [pcorr_pos,pcorr_neg] = stepdown_tfce(analysis,2,imgs,imgs2,covariate,nperm,H,E,C,ndh)
+% [varargout] = stepdown_tfce(analysis,tails,imgs,imgs2,covariate,nperm,H,E,C,dh)
+% [pcorr] = stepdown_tfce(analysis,1,imgs,imgs2,covariate,nperm,H,E,C,dh)
+% [pcorr_pos,pcorr_neg] = stepdown_tfce(analysis,2,imgs,imgs2,covariate,nperm,H,E,C,dh)
 %
 % Arguments:
 %
@@ -61,7 +61,7 @@ function [varargout] = stepdown_tfce(analysis,tails,imgs,varargin)
 %
 % C -- connectivity, default = 6 (6 = surface, 18 = edge, 26 = corner)
 %
-% ndh -- step number for cluster formation, default = 100
+% dh -- step size for cluster formation, default = .1
 %
 %   More steps will be more precise but will require more time and memory.
 %   The H & E default parameter settings match FSL's randomise/fslmaths.
@@ -86,7 +86,7 @@ nperm = 1000;
 H = 2;
 E = .5;
 C = 6;
-ndh = 100;
+dh = .1;
 
 % adjusting optional arguments based on input
 fixedargn = 3;
@@ -118,7 +118,7 @@ if nargin > (fixedargn + 5)
 end
 if nargin > (fixedargn + 6)
     if ~isempty(varargin{7})
-        ndh = varargin{7};
+        dh = varargin{7};
     end
 end
 
@@ -167,23 +167,6 @@ if strcmp(analysis,'correlation')
     end
 end
 
-%% perform TFCE
-if (strcmp(analysis,'independent') || strcmp(analysis,'paired'))
-    tfced1 = NaN(bsize);
-    tfced2 = NaN(bsize);
-    for i = 1:bsize(4)
-        tfced1(:,:,:,i) = matlab_tfce_transform_twotailed(imgs1(:,:,:,i),H,E,C,ndh);
-    end
-    for i = 1:bsize2(4)
-        tfced2(:,:,:,i) = matlab_tfce_transform_twotailed(imgs2(:,:,:,i),H,E,C,ndh);
-    end
-else
-    tfced = NaN(bsize);
-    for i = 1:bsize(4)
-        tfced(:,:,:,i) = matlab_tfce_transform_twotailed(imgs(:,:,:,i),H,E,C,ndh);
-    end
-end
-
 %% analysis calls
 % select appropriate analysis
 switch analysis
@@ -191,34 +174,34 @@ switch analysis
     % one sample test (mean > 0)
     case 'onesample'
         if tails == 1
-            pcorr = matlab_tfce_ttest_onesample(tfced,tails,nperm);
+            pcorr = stepdown_tfce_ttest_onesample(imgs,tails,nperm,H,E,C,dh);
         else
-            [pcorr_pos,pcorr_neg]= matlab_tfce_ttest_onesample(tfced,tails,nperm); 
+            [pcorr_pos,pcorr_neg]= stepdown_tfce_ttest_onesample(imgs,tails,nperm,H,E,C,dh); 
         end
     
     % paired (repeated measures) test (imgs1>imgs2)
     case 'paired'
-        tfced = tfced1-tfced2;
+        imgs = imgs1-imgs2;
         if tails == 1
-            pcorr = matlab_tfce_ttest_onesample(tfced,tails,nperm);
+            pcorr = stepdown_tfce_ttest_onesample(imgs,tails,nperm,H,E,C,dh);
         else
-            [pcorr_pos,pcorr_neg]= matlab_tfce_ttest_onesample(tfced,tails,nperm); 
+            [pcorr_pos,pcorr_neg]= stepdown_tfce_ttest_onesample(imgs,tails,nperm,H,E,C,dh); 
         end
     
     % independent (two sample) samples test (imgs1>imgs2)
     case 'independent'
         if tails == 1
-            pcorr = matlab_tfce_ttest_independent(tfced1,tfced2,tails,nperm);
+            pcorr = stepdown_tfce_ttest_independent(imgs1,imgs2,tails,nperm,H,E,C,dh);
         else
-            [pcorr_pos,pcorr_neg] = matlab_tfce_ttest_independent(tfced1,tfced2,tails,nperm);
+            [pcorr_pos,pcorr_neg] = stepdown_tfce_ttest_independent(imgs1,imgs2,tails,nperm,H,E,C,dh);
         end
     
     % covariate-img correlation (R>0)
     case 'correlation'
         if tails == 1
-            pcorr = matlab_tfce_correlation(tfced,covariate,tails,nperm);
+            pcorr = stepdown_tfce_correlation(imgs,covariate,tails,nperm,H,E,C,dh);
         else
-            [pcorr_pos,pcorr_neg] = matlab_tfce_correlation(tfced,covariate,tails,nperm);
+            [pcorr_pos,pcorr_neg] = stepdown_tfce_correlation(imgs,covariate,tails,nperm,H,E,C,dh);
         end
         
     % unrecognized analysis input
