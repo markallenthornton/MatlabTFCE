@@ -9,9 +9,9 @@ function [tfced] = matlab_tfce_transform_twotailed(img,H,E,C,ndh)
 %   -- ndh step number for cluster formation
 
 % call tfce on both sides of the image
-tfced = matlab_tfce_transform(img,H,E,C,ndh);
-tfced = matlab_tfce_transform(-tfced,H,E,C,ndh);
-tfced = -tfced;
+tfced_pos = matlab_tfce_transform(img,H,E,C,ndh);
+tfced_neg = matlab_tfce_transform(-img,H,E,C,ndh);
+tfced = tfced_pos-tfced_neg;
 
 end
 
