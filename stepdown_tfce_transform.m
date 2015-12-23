@@ -11,8 +11,6 @@ function [tfced] = matlab_tfce_transform(img,H,E,C,ndh)
 % set cluster thresholds
 threshs = linspace(0,max(img(:)),ndh+2);
 threshs = threshs(2:(ndh+1));
-dh = diff(threshs);
-dh = dh(1);
 
 % find positive voxels (greater than first threshold)
 nvox = length(img(:));
