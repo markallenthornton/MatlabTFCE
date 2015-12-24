@@ -1,5 +1,5 @@
-function [tfced] = stepdown_tfce_transform_twotailed(img,H,E,C,dh)
-%STEPDOWN_TFCE_TRANSFORM_TWOTAILED convenience wrapper for tfce_transform
+function [tfced] = matlab_tfce_transform_twotailed(img,H,E,C,dh)
+%MATLAB_TFCE_TRANSFORM_TWOTAILED convenience wrapper for tfce_transform
 %   Performs threshold free cluster enhancement of both positive and
 %   negative sides of an image.
 %   -- img the 3D image to be transformed
@@ -9,8 +9,8 @@ function [tfced] = stepdown_tfce_transform_twotailed(img,H,E,C,dh)
 %   -- dh step size for cluster formation
 
 % call tfce on both sides of the image
-tfced_pos = stepdown_tfce_transform(img,H,E,C,dh);
-tfced_neg = stepdown_tfce_transform(-img,H,E,C,dh);
+tfced_pos = matlab_tfce_transform(img,H,E,C,dh);
+tfced_neg = matlab_tfce_transform(-img,H,E,C,dh);
 tfced = tfced_pos-tfced_neg;
 
 end

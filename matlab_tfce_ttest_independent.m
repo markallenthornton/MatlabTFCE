@@ -1,4 +1,4 @@
-function [varargout] = matlab_tfce_ttest_independent(imgs1,imgs2,tails,nperm)
+function [varargout] = matlab_tfce_ttest_independent(imgs1,imgs2,tails,nperm,H,E,C,dh)
 %MATLAB_TFCE_TTEST_INDEPENDENT tests means difference, independent samples
 %   [varargout] = matlab_tfce_ttest_independent(imgs1,imgs2,tails,nperm)
 %   Independent (two-sample) t-tests. The alternative hypothesis is 
@@ -10,6 +10,11 @@ function [varargout] = matlab_tfce_ttest_independent(imgs1,imgs2,tails,nperm)
 %   imgs2 -- images from group 2 with dimensions x,y,z,nsubject2
 %	tails -- 1 or 2 tailed test
 %   nperm -- number of permutations
+%   -- img the 3D image to be transformed
+%   -- H height exponent
+%   -- E extent exponent
+%   -- C connectivity
+%   -- ndh step number for cluster formation
 %
 %   Output:
 %	If tails == 1:
@@ -26,12 +31,20 @@ nsub2 = bsize(4);
 bsize = bsize(1:3);
 nsub = nsub1+nsub2;
 
+% set tranform function
+if tails == 1
+    transform = @matlab_tfce_transform;
+else
+    transform = @matlab_tfce_transform_twotailed;
+end
+
 % calculate true mean image
 truestat = (mean(imgs1,4)-mean(imgs2,4))./sqrt(var(imgs1,0,4)/nsub1+var(imgs2,0,4)/nsub1);
 implicitmask = ~isnan(truestat);
+tfcestat = transform(truestat,H,E,C,dh);
 
 % p-values for comparison
-tvals = truestat(implicitmask);
+tvals = tfcestat(implicitmask);
 if tails == 2
 	tvals=abs(tvals);
 end
@@ -57,13 +70,16 @@ for p = 1:nperm
     
     % calculate permutation means
     rstats = (mean(rimgs1,2)-mean(rimgs2,2))./sqrt(var(rimgs1,0,2)/nsub1+var(rimgs2,0,2)/nsub2);
+    rbrain = zeros(bsize);
+    rbrain(implicitmask) = rstats;
+    rbrain = transform(rbrain,H,E,C,dh);
+    rstats = rbrain(implicitmask);
+    if tails == 2
+        rstats = abs(rstats);
+    end
     
     % compare maxima to t-values and increment as appropriate
-    if tails == 1
-		curexceeds = max(rstats) >= tvals;
-	else
-		curexceeds = max(abs(rstats)) >= tvals;
-    end
+    curexceeds = max(rstats) >= tvals;
     exceedances = exceedances + curexceeds;
 end
 

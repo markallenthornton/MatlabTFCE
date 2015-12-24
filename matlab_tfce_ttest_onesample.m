@@ -1,5 +1,5 @@
-function [varargout] = nostepdown_tfce_ttest_onesample(imgs,tails,nperm,H,E,C,dh)
-%NOSTEPDOWN_TFCE_TTEST_ONESAMPLE performs maximal statistic permutation testing
+function [varargout] = matlab_tfce_ttest_onesample(imgs,tails,nperm,H,E,C,dh)
+%MATLAB_TFCE_TTEST_ONESAMPLE performs maximal statistic permutation testing
 %   [varargout] = matlab_tfce_ttest_onesample(imgs,tails,nperm) corrects
 %   a one-sample t-test (mean > 0) for multiple comparisons via a 
 %   permutation procedure (random sign flipping). Maximal t-stats of
@@ -10,6 +10,11 @@ function [varargout] = nostepdown_tfce_ttest_onesample(imgs,tails,nperm,H,E,C,dh
 %	tails -- 1 or 2 tailed test
 %   nperm -- number of permutations to perform. More permutations yield
 %   more precise correct p-values.
+%   -- img the 3D image to be transformed
+%   -- H height exponent
+%   -- E extent exponent
+%   -- C connectivity
+%   -- ndh step number for cluster formation
 %
 %   Output:
 %	If tails == 1:
@@ -25,19 +30,19 @@ bsize = bsize(1:3);
 
 % set tranform function
 if tails == 1
-    transform = @stepdown_tfce_transform;
+    transform = @matlab_tfce_transform;
 else
-    transform = @stepdown_tfce_transform_twotailed;
+    transform = @matlab_tfce_transform_twotailed;
 end
 
 % calculate true mean image
 truestat = mean(imgs,4)./(std(imgs,0,4)./sqrt(nsub));
 implicitmask = ~isnan(truestat);
-truestat = transform(truestat,H,E,C,dh);
+tfcestat = transform(truestat,H,E,C,dh);
 
 
 % p-values for comparison
-tvals = truestat(implicitmask);
+tvals = tfcestat(implicitmask);
 if tails == 2
 	tvals=abs(tvals);
 end

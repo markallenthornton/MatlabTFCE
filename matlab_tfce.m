@@ -1,8 +1,8 @@
-function [varargout] = stepdown_tfce(analysis,tails,imgs,varargin)
-%STEPDOWN_TFCE general wrapper for specifying analyses. Receives arguments
+function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
+%MATLAB_TFCE general wrapper for specifying analyses. Receives arguments
 % from matlab_tfce_gui.m if specificed manually. All intended
 % functionality in the package can be accessed via this function or the gui
-% input version. This stepdown_tfce and the functions it calls are all
+% input version. This matlab_tfce and the functions it calls are all
 % standalone - i.e. they do not rely on functions from other packages. In
 % contrast, matlab_tfce_gui uses (included) functions from the 
 % 'NIfTI and ANALYZE tools' package to facilitate file io and the gui.
@@ -25,9 +25,9 @@ function [varargout] = stepdown_tfce(analysis,tails,imgs,varargin)
 % corrections, is substantially less conservative due to the fact that
 % it capitalizes on spatial dependency in the data. 
 %
-% [varargout] = stepdown_tfce(analysis,tails,imgs,imgs2,covariate,nperm,H,E,C,dh)
-% [pcorr] = stepdown_tfce(analysis,1,imgs,imgs2,covariate,nperm,H,E,C,dh)
-% [pcorr_pos,pcorr_neg] = stepdown_tfce(analysis,2,imgs,imgs2,covariate,nperm,H,E,C,dh)
+% [varargout] = matlab_tfce(analysis,tails,imgs,imgs2,covariate,nperm,H,E,C,dh)
+% [pcorr] = matlab_tfce(analysis,1,imgs,imgs2,covariate,nperm,H,E,C,dh)
+% [pcorr_pos,pcorr_neg] = matlab_tfce(analysis,2,imgs,imgs2,covariate,nperm,H,E,C,dh)
 %
 % Arguments:
 %
@@ -174,34 +174,34 @@ switch analysis
     % one sample test (mean > 0)
     case 'onesample'
         if tails == 1
-            pcorr = stepdown_tfce_ttest_onesample(imgs,tails,nperm,H,E,C,dh);
+            pcorr = matlab_tfce_ttest_onesample(imgs,tails,nperm,H,E,C,dh);
         else
-            [pcorr_pos,pcorr_neg]= stepdown_tfce_ttest_onesample(imgs,tails,nperm,H,E,C,dh); 
+            [pcorr_pos,pcorr_neg]= matlab_tfce_ttest_onesample(imgs,tails,nperm,H,E,C,dh); 
         end
     
     % paired (repeated measures) test (imgs1>imgs2)
     case 'paired'
         imgs = imgs1-imgs2;
         if tails == 1
-            pcorr = stepdown_tfce_ttest_onesample(imgs,tails,nperm,H,E,C,dh);
+            pcorr = matlab_tfce_ttest_onesample(imgs,tails,nperm,H,E,C,dh);
         else
-            [pcorr_pos,pcorr_neg]= stepdown_tfce_ttest_onesample(imgs,tails,nperm,H,E,C,dh); 
+            [pcorr_pos,pcorr_neg]= matlab_tfce_ttest_onesample(imgs,tails,nperm,H,E,C,dh); 
         end
     
     % independent (two sample) samples test (imgs1>imgs2)
     case 'independent'
         if tails == 1
-            pcorr = stepdown_tfce_ttest_independent(imgs1,imgs2,tails,nperm,H,E,C,dh);
+            pcorr = matlab_tfce_ttest_independent(imgs1,imgs2,tails,nperm,H,E,C,dh);
         else
-            [pcorr_pos,pcorr_neg] = stepdown_tfce_ttest_independent(imgs1,imgs2,tails,nperm,H,E,C,dh);
+            [pcorr_pos,pcorr_neg] = matlab_tfce_ttest_independent(imgs1,imgs2,tails,nperm,H,E,C,dh);
         end
     
     % covariate-img correlation (R>0)
     case 'correlation'
         if tails == 1
-            pcorr = stepdown_tfce_correlation(imgs,covariate,tails,nperm,H,E,C,dh);
+            pcorr = matlab_tfce_correlation(imgs,covariate,tails,nperm,H,E,C,dh);
         else
-            [pcorr_pos,pcorr_neg] = stepdown_tfce_correlation(imgs,covariate,tails,nperm,H,E,C,dh);
+            [pcorr_pos,pcorr_neg] = matlab_tfce_correlation(imgs,covariate,tails,nperm,H,E,C,dh);
         end
         
     % unrecognized analysis input

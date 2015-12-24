@@ -1,6 +1,6 @@
-function [tfced] = stepdown_tfce_transform(img,H,E,C,dh)
-%STEPDOWN_TFCE_TRANSFORM performs threshold free cluster enhancement
-%   [tfced] = stepdown_tfce_transform(img,H,E,C,ndh) performs threshold
+function [tfced] = matlab_tfce_transform(img,H,E,C,dh)
+%MATLAB_TFCE_TRANSFORM performs threshold free cluster enhancement
+%   [tfced] = matlab_tfce_transform(img,H,E,C,ndh) performs threshold
 %   free cluster enhancement on 'img' as per Smith & Nichols (2009).
 %   -- img the 3D image to be transformed
 %   -- H height exponent

@@ -1,4 +1,4 @@
-function [varargout] = matlab_tfce_correlation(imgs,covariate,tails,nperm)
+function [varargout] = matlab_tfce_correlation(imgs,covariate,tails,nperm,H,E,C,dh)
 % MATLAB_TFCE_CORRELATION computes TFCE corrected p-values for
 % individual difference correlation between a covariate and brain activity.
 %
@@ -10,6 +10,11 @@ function [varargout] = matlab_tfce_correlation(imgs,covariate,tails,nperm)
 %	tails -- 1 or 2 tailed test
 %   nperm -- number of permutations to perform. More permutations yield
 %   more precise correct p-values.
+%   -- img the 3D image to be transformed
+%   -- H height exponent
+%   -- E extent exponent
+%   -- C connectivity
+%   -- ndh step number for cluster formation
 %
 %   Output:
 %	If tails == 1:
@@ -23,6 +28,13 @@ bsize = size(imgs);
 nsub = bsize(4);
 covariate = covariate(:);
 bsize = bsize(1:3);
+
+% set tranform function
+if tails == 1
+    transform = @matlab_tfce_transform;
+else
+    transform = @matlab_tfce_transform_twotailed;
+end
 
 % calculate implicit mask
 sumimg = sum(imgs,4);
@@ -38,10 +50,12 @@ end
 
 % calculate true correlation image
 truestat = corr(occimgs,covariate);
-if tails == 1
-	cvals = truestat;
-else
-	cvals = abs(truestat);
+trueimg=NaN(bsize);
+trueimg(implicitmask) = truestat;
+trueimg = transform(trueimg,H,E,C,dh);
+tfcestat = trueimg(implicitmask);
+if tails == 2
+	cvals = abs(tfcestat);
 end
 
 % cycle through permutations
@@ -53,14 +67,16 @@ for p = 1:nperm
     
     % calculate permutation correlations
     rstats = corr(occimgs,rcov);
-	if tails == 1
-		rcvals = rstats;
-	else
-		rcvals = abs(rstats);
-	end
+    rbrain = zeros(bsize);
+    rbrain(implicitmask) = rstats;
+    rbrain = transform(rbrain,H,E,C,dh);
+    rstats = rbrain(implicitmask);
+    if tails == 2
+        rstats = abs(rstats);
+    end
     
     % compare maxima to t-values and increment as appropriate
-    curexceeds = max(rcvals) >= cvals;
+    curexceeds = max(rstats) >= cvals;
     exceedances = exceedances + curexceeds;
 end
 
