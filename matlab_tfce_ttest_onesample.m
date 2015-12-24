@@ -1,5 +1,5 @@
-function [varargout] = stepdown_tfce_ttest_onesample(imgs,tails,nperm,H,E,C,dh)
-%STEPDOWN_TFCE_TTEST_ONESAMPLE performs maximal statistic permutation testing
+function [varargout] = nostepdown_tfce_ttest_onesample(imgs,tails,nperm,H,E,C,dh)
+%NOSTEPDOWN_TFCE_TTEST_ONESAMPLE performs maximal statistic permutation testing
 %   [varargout] = matlab_tfce_ttest_onesample(imgs,tails,nperm) corrects
 %   a one-sample t-test (mean > 0) for multiple comparisons via a 
 %   permutation procedure (random sign flipping). Maximal t-stats of
@@ -69,14 +69,12 @@ for p = 1:nperm
     rbrain(implicitmask) = rstats;
     rbrain = transform(rbrain,H,E,C,dh);
     rstats = rbrain(implicitmask);
-
-    % compare maxima to true statistic and increment as appropriate
-	if tails == 1
-		curexceeds = max(rstats) >= tvals;
-	else
-		curexceeds = max(abs(rstats)) >= tvals;
-	end
+    if tails == 2
+        rstats = abs(rstats);
+    end
     
+    % compare maxima to true statistic and increment as appropriate
+    curexceeds = max(rstats) >= tvals;
     exceedances = exceedances + curexceeds;
 end
 
