@@ -52,14 +52,13 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 % covariate -- a subject x 1 matrix containing an individual difference
 % covariate for correlation across subjects with voxelwise activity.
 % 
-% nperm -- number of permutations to perform. 1000 by default, but 10000
-% recommended for publication purposes.
+% nperm -- number of permutations to perform. default = 5000
 %
 % H -- height exponent, default = 2
 %
 % E -- extent exponent, default = 0.5
 %
-% C -- connectivity, default = 6 (6 = surface, 18 = edge, 26 = corner)
+% C -- connectivity, default = 26 (6 = surface, 18 = edge, 26 = corner)
 %
 % dh -- step size for cluster formation, default = .1
 %
@@ -75,6 +74,9 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 % If tails == 2, two such output images will be returned, one for the
 % 'positive' tail and one for the 'negative' tail of the test,
 % respectively.
+%
+% Note that for convenience, if using matlab_tfce_gui.m, result images will
+% be written out as 1-pcorr instead.
 
 
 %% input checks and default setting
@@ -82,10 +84,10 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 % setting defaults
 imgs2 = [];
 covariate = [];
-nperm = 1000;
+nperm = 5000;
 H = 2;
 E = .5;
-C = 6;
+C = 26;
 dh = .1;
 
 % adjusting optional arguments based on input

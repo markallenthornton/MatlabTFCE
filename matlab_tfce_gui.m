@@ -94,10 +94,10 @@ yp = 15;
 % ui controls
 u1 = uicontrol('Style','edit','HorizontalAlignment','left','String','new_contrast','Position',[50,350+yp,120,20]);
 u2 = uicontrol('Style','popupmenu','HorizontalAlignment','left','String',{'1','2'},'Position',[50,300+yp,120,20]);
-u3 = uicontrol('Style','edit','HorizontalAlignment','left','String','1000','Position',[50,250+yp,120,20]);
+u3 = uicontrol('Style','edit','HorizontalAlignment','left','String','5000','Position',[50,250+yp,120,20]);
 u4 = uicontrol('Style','edit','HorizontalAlignment','left','String','2','Position',[50,200+yp,120,20]);
 u5 = uicontrol('Style','edit','HorizontalAlignment','left','String','0.5','Position',[50,150+yp,120,20]);
-u6 = uicontrol('Style','popupmenu','HorizontalAlignment','left','String',{'6','18','26'},'Position',[50,100+yp,120,20]);
+u6 = uicontrol('Style','popupmenu','HorizontalAlignment','left','String',{'26','18','6'},'Position',[50,100+yp,120,20]);
 u7 = uicontrol('Style','edit','HorizontalAlignment','left','String','0.1','Position',[50,50+yp,120,20]);
 uicontrol('Style','PushButton','HorizontalAlignment','center','String','Begin','Position',[30,10,160,40],'Callback',{@run_tfce,[u1 u2 u3 u4 u5 u6 u7],analysis,niiout,imgs,covariate});
     
@@ -149,7 +149,7 @@ if length(imgs) == 2
 else
     imgs2 = [];
 end
-close all;
+close all
 
 % run analysis
 disp(['Analysis ' ananame ' ' analysis ' started at ' datestr(now)]);
@@ -176,7 +176,7 @@ disp('Writing complete!')
 end
 
 function write_res(fname,niiout,pcorr)
-% output writing function
-niiout.img = pcorr;
+% output writing function (1-corrected p-value)
+niiout.img = 1-pcorr;
 save_nii(niiout,fname);
 end
