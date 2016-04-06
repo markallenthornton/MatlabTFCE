@@ -3,8 +3,7 @@ function [varargout] = matlab_tfce_correlation(imgs,covariate,tails,nperm,H,E,C,
 % individual difference correlation between a covariate and brain activity.
 %
 %   Arguments:
-%   imgs -- a 4D (x,y,z,subject) matrix of images. Like tfce_permutation,
-%   these should have had tfce_transform applied already.
+%   imgs -- a 4D (x,y,z,subject) matrix of images.
 %   covariate -- a vector of length = number of subjects containing values
 %   to be correlated with brain activity
 %	tails -- 1 or 2 tailed test
@@ -54,6 +53,7 @@ trueimg=NaN(bsize);
 trueimg(implicitmask) = truestat;
 trueimg = transform(trueimg,H,E,C,dh);
 tfcestat = trueimg(implicitmask);
+cvals = tfcestat;
 if tails == 2
 	cvals = abs(tfcestat);
 end
@@ -96,7 +96,7 @@ if tails == 2
 	pcorr_neg(pos) = 1;
 end
 
-% assigne output to varargout
+% assign output to varargout
 if tails == 1
 	varargout{1} = pcorr;
 else
