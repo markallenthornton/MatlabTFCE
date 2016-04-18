@@ -28,6 +28,7 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 % [varargout] = matlab_tfce(analysis,tails,imgs,imgs2,covariate,nperm,H,E,C,dh)
 % [pcorr] = matlab_tfce(analysis,1,imgs,imgs2,covariate,nperm,H,E,C,dh)
 % [pcorr_pos,pcorr_neg] = matlab_tfce(analysis,2,imgs,imgs2,covariate,nperm,H,E,C,dh)
+% [pcorr_fac1,pcorr_fac2,pcorr_int] = matlab_tfce(analysis,1,imgs,imgs2,covariate,nperm,H,E,C,dh)
 %
 % Arguments:
 %
@@ -36,18 +37,25 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 %   -- 'paired' -- paired (dependent samples) test mean(imgs) > mean(imgs2)
 %   -- 'independent' -- independent (two sample) test mean(imgs) > mean(imgs2)
 %   -- 'correlation' -- correlation across subjects of imgs with covariate
+%   -- 'rm_anova1' -- one-factor repeated measures ANOVA
+%   -- 'rm_anova2' -- two-factor repeated measures ANOVA
 %
 % tails -- specify a 1 or 2 tailed test (unidirectional or bidirectional)
-% that can be combined with any analysis.
+% that can be combined with t-tests and correlations. Ignored 
 %
 % imgs -- a 4D matrix of imaging data for analysis. Dimensions are expected
-% to be x,y,z,subject.
+% to be x,y,z,subject. Alternatively, for repeated measures ANOVAs, a cell
+% array in which each cell contains the 4D (x,y,z,subject) matrix for one
+% experimental cell in the ANOVA. Should be m x 1 for one-factor ANOVAs, or
+% m x n for two-factor ANOVAs, where m and n are the number of factor
+% levels of the first and second factor respectively.
 %
 % Optional arguments (can supply [] to skip):
 %
 % imgs2 -- a second 4D matrix as above, required for paired and independent
 % analysis options. Must have same xyz dimensions as imgs, and if the
-% analysis is paired, subject number must match as well.
+% analysis is paired, subject number must match as well. Note that this 
+% argument is not used for repeated measures anovas.
 %
 % covariate -- a subject x 1 matrix containing an individual difference
 % covariate for correlation across subjects with voxelwise activity.
@@ -74,6 +82,11 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 % If tails == 2, two such output images will be returned, one for the
 % 'positive' tail and one for the 'negative' tail of the test,
 % respectively.
+%
+% If analysis == rm_anova2, three output images will be produced, one for
+% each main effect and the interaction term. The first main effect
+% corresponds to the rows of the input cell array, and the second main
+% effect corresponds to the columns of the input cell array.
 %
 % Note that for convenience, if using matlab_tfce_gui.m, result images will
 % be written out as 1-pcorr instead.
@@ -129,11 +142,36 @@ if ~(sum(tails==[1 2]))
     error('Inappropriate number of tails (must be 1 or 2)');
 end
 
-% check image data
+% check class and size of input images
 bsize = size(imgs);
-if length(bsize) ~= 4
+if iscell(imgs)
+    if ~(strcmp(analysis,'rm_anova1') || strcmp(analysis,'rm_anova2'))
+        error('Only ANOVAs expect cell array imgs input')
+    end
+    if strcmp(analysis,'rm_anova1') && (bsize(2)~=1)
+        if bsize(1) == 1
+            warning('m x 1 cell array expected for one-way anova; correcting orientation')
+            imgs = imgs';
+        else
+            error('m x 1 cell array expected for one-way anova')
+        end 
+    else
+        if sum(bsize==1)>0
+            error('m x n (m & n >2) cell array expected for two-way anova')
+        end
+    end
+    if sum(sum(cellfun(@(x) length(size(x)),imgs)~=4))>0
+        error('Image data not 4D - each cell must be x-y-z-subject')
+    end
+elseif (strcmp(analysis,'rm_anova1') || strcmp(analysis,'rm_anova2'))
+    error('imgs must be cell array for ANOVAs')
+elseif length(bsize) ~= 4
     error('Image data not 4D - must be x-y-z-subject')
+elseif bsize(4) < 13
+    warning('Low N limits number of unique permutations. Approximate (vs. exact) permutation may not be appropriate.');
 end
+
+% check properties of imgs2
 if ~isempty(imgs2)
     imgs1 = imgs;
     bsize2 = size(imgs2);
@@ -156,9 +194,12 @@ if strcmp(analysis,'paired')
     end
 end
 
-% check subject number is high enough
-if bsize(4) < 15
-    warning('Low N limits number of unique permutations. Approximate (vs. exact) permutation may not be appropriate.');
+% check the subject number is the same for repeated measures anovas
+if strcmp(analysis,'rm_anova1') || strcmp(analysis,'rm_anova2')
+    subns = cellfun(@(x) size(x,4),imgs);
+    if unique(subns) > 1
+        error('Not an equal number of images in each cell')
+    end
 end
 
 % check covariate
@@ -206,13 +247,27 @@ switch analysis
             [pcorr_pos,pcorr_neg] = matlab_tfce_correlation(imgs,covariate,tails,nperm,H,E,C,dh);
         end
         
+    % repeated measure (within subject) omnibus one-way ANOVA
+    case 'rm_anova1'
+        pcorr = matlab_tfce_rm_anova1(imgs,nperm,H,E,C,dh);
+    
+    % repeated measure (within subject) two-way factorial ANOVA
+    case 'rm_anova2'
+        [pcorr_fac1,pcorr_fac2,pcorr_int] = matlab_tfce_rm_anova2(imgs,nperm,H,E,C,dh);
+        
     % unrecognized analysis input
     otherwise
         error('Analysis type not recognized');
 end
 
 %% assign output
-if tails == 1
+if strcmp(analysis,'rm_anova2')
+    varargout{1} = pcorr_fac1;
+    varargout{2} = pcorr_fac2;
+    varargout{3} = pcorr_int;
+elseif strcmp(analysis,'rm_anova1')
+    varargout{1} = pcorr;
+elseif tails == 1
     varargout{1} = pcorr;
 else
     varargout{1} = pcorr_pos;
