@@ -29,4 +29,4 @@ The following statistical tests can be computed:
 'rm_anova1' -- one-factor repeated measures ANOVA
 'rm_anova2' -- two-factor (with interaction) repeated measures ANOVA
 
-See the demo script to observe proof of familywise error rate control under trivial conditions. The TFCE transformation itself and the paired/one-sample t-test routines have been validated directly against FSL's randomise using real neuroimaging data.
+See the demo script to observe proof of familywise error rate control under trivial conditions. The TFCE transformation itself and the paired/one-sample t-test routines have been validated directly against FSL's randomise using real fMRI data.
