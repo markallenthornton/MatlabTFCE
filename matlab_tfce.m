@@ -148,13 +148,15 @@ if iscell(imgs)
     if ~(strcmp(analysis,'rm_anova1') || strcmp(analysis,'rm_anova2'))
         error('Only ANOVAs expect cell array imgs input')
     end
-    if strcmp(analysis,'rm_anova1') && (bsize(2)~=1)
-        if bsize(1) == 1
-            warning('m x 1 cell array expected for one-way anova; correcting orientation')
-            imgs = imgs';
-        else
-            error('m x 1 cell array expected for one-way anova')
-        end 
+    if strcmp(analysis,'rm_anova1')
+        if bsize(2)~=1
+            if bsize(1) == 1
+                warning('m x 1 cell array expected for one-way anova; correcting orientation')
+                imgs = imgs';
+            else
+                error('m x 1 cell array expected for one-way anova')
+            end 
+        end
     else
         if sum(bsize==1)>0
             error('m x n (m & n >2) cell array expected for two-way anova')
@@ -197,7 +199,7 @@ end
 % check the subject number is the same for repeated measures anovas
 if strcmp(analysis,'rm_anova1') || strcmp(analysis,'rm_anova2')
     subns = cellfun(@(x) size(x,4),imgs);
-    if unique(subns) > 1
+    if length(unique(subns)) > 1
         error('Not an equal number of images in each cell')
     end
 end

@@ -1,7 +1,7 @@
 % fwe_control.m
 % demo of package's control over familywise error rate
-%% one sample ttest, one-sided
 nsim = 1000;
+%% one sample ttest, one-sided
 fp = NaN(nsim,1);
 for i = 1:nsim
     imgs = randn(4,4,4,20);
@@ -11,7 +11,6 @@ end
 sum(fp)/nsim % false positive rate
 
 %% one sample ttest, two-sided
-nsim = 1000;
 fp = NaN(nsim,1);
 for i = 1:nsim
     imgs = randn(4,4,4,20);
@@ -21,7 +20,6 @@ end
 sum(fp)/nsim % false positive rate
 
 %% independent sample ttest, one-sided
-nsim = 1000;
 fp = NaN(nsim,1);
 for i = 1:nsim
     imgs = randn(4,4,4,20);
@@ -32,7 +30,6 @@ end
 sum(fp)/nsim % false positive rate
 
 %% independent sample ttest, two-sided
-nsim = 1000;
 fp = NaN(nsim,1);
 for i = 1:nsim
     imgs = randn(4,4,4,20);
@@ -42,7 +39,6 @@ for i = 1:nsim
 end
 sum(fp)/nsim % false positive rate
 %% correlation, one-sided
-nsim = 1000;
 fp = NaN(nsim,1);
 for i = 1:nsim
     imgs = randn(4,4,4,20);
@@ -53,7 +49,6 @@ end
 sum(fp)/nsim % false positive rate
 
 %% correlation, two-sided
-nsim = 1000;
 fp = NaN(nsim,1);
 for i = 1:nsim
     imgs = randn(4,4,4,20);
