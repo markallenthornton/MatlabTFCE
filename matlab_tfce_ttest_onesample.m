@@ -97,7 +97,7 @@ if tails == 2
 	pcorr_neg(pos) = 1;
 end
 
-% assigne output to varargout
+% assign output to varargout
 if tails == 1
 	varargout{1} = pcorr;
 else

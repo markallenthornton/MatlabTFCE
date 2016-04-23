@@ -19,62 +19,64 @@ function pcorr = matlab_tfce_rm_anova1(imgs,nperm,H,E,C,dh)
 %   pcorr -- wholebrain map of corrected p-values
 
 % calculate matrix size
-bsize = size(imgs);
+bsize = size(imgs{1});
 nsub = bsize(4);
 bsize = bsize(1:3);
+levels = size(imgs,1);
 
 % set tranform function
-if tails == 1
-    transform = @matlab_tfce_transform;
-else
-    transform = @matlab_tfce_transform_twotailed;
-end
+transform = @matlab_tfce_transform;
 
-% calculate true mean image
-truestat = mean(imgs,4)./(std(imgs,0,4)./sqrt(nsub));
-implicitmask = ~isnan(truestat);
-tfcestat = transform(truestat,H,E,C,dh);
-
-
-% p-values for comparison
-tvals = tfcestat(implicitmask);
-if tails == 2
-	tvals=abs(tvals);
-end
-nvox = length(tvals);
+% calculate implicit mask
+cellmeans = cellfun(@(x) sum(x,4),imgs,'UniformOutput',false);
+implicitmask = sum(cat(4,cellmeans{:}),4);
+implicitmask = ~(implicitmask == 0 | isnan(implicitmask));
+nvox = sum(implicitmask(:));
 
 % extract occupied voxels for permutation test
-occimgs = NaN(nvox,nsub);
-for s = 1:nsub
-    curimg = imgs(:,:,:,s);
-    occimgs(:,s) = curimg(implicitmask);
+occimgs = NaN(nsub,levels,nvox);
+for i = 1:levels
+    for s = 1:nsub
+        curimg = imgs{i}(:,:,:,s);
+        occimgs(s,i,:) = curimg(implicitmask);
+    end
 end
+
+% calculate true f-stat image
+fvals = NaN(nvox,1);
+for v = 1:nvox
+    [~,table] = anova_rm(occimgs(:,:,v),'off');
+    fvals(v) = table{2,5};
+end
+truestat = zeros(bsize);
+truestat(implicitmask) = fvals;
+tfcestat = transform(truestat,H,E,C,dh);
+tfcestat = tfcestat(implicitmask);
 
 % cycle through permutations
 exceedances = zeros(nvox,1);
 for p = 1:nperm
     
-    % permute signs
-    relabeling = randsample([-1 1],nsub,'true');
+    % permute labels
     roccimgs = occimgs;
     for s = 1:nsub
-        if relabeling(s) == -1;
-            roccimgs(:,s) = -occimgs(:,s);
-        end
+        relabeling = randsample(levels,levels);
+        roccimgs(s,relabeling,:) = roccimgs(s,:,:);
     end
     
     % calculate permutation statistic
-    rstats =  mean(roccimgs,2)./(std(roccimgs,0,2)./sqrt(nsub));
+    rfvals = NaN(nvox,1);
+    for v = 1:nvox
+        [~,table] = anova_rm(roccimgs(:,:,v),'off');
+        rfvals(v) = table{2,5};
+    end
     rbrain = zeros(bsize);
-    rbrain(implicitmask) = rstats;
+    rbrain(implicitmask) = rfvals;
     rbrain = transform(rbrain,H,E,C,dh);
     rstats = rbrain(implicitmask);
-    if tails == 2
-        rstats = abs(rstats);
-    end
     
     % compare maxima to true statistic and increment as appropriate
-    curexceeds = max(rstats) >= tvals;
+    curexceeds = max(rstats) >= tfcestat;
     exceedances = exceedances + curexceeds;
 end
 
@@ -82,23 +84,6 @@ end
 corrected = exceedances./nperm;
 pcorr = ones(bsize);
 pcorr(implicitmask) = corrected;
-
-% split into positive and negative effects (if needed)
-if tails == 2
-	pos = truestat>0;
-	pcorr_pos = pcorr;
-	pcorr_pos(~pos) = 1;
-	pcorr_neg = pcorr;
-	pcorr_neg(pos) = 1;
-end
-
-% assigne output to varargout
-if tails == 1
-	varargout{1} = pcorr;
-else
-	varargout{1} = pcorr_pos;
-	varargout{2} = pcorr_neg;
-end
 
 end
 
