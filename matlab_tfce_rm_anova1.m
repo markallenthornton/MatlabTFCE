@@ -42,12 +42,27 @@ for i = 1:levels
     end
 end
 
-% calculate true f-stat image
-fvals = NaN(nvox,1);
-for v = 1:nvox
-    [~,table] = anova_rm(occimgs(:,:,v),'off');
-    fvals(v) = table{2,5};
-end
+% calculate means
+smeans = mean(occimgs,2);
+cmeans = mean(occimgs,1);
+gmeans = mean(mean(occimgs));
+gmeans_c = repmat(gmeans,[1,levels,1]);
+gmeans_s = repmat(gmeans,[nsub,1,1]);
+gmeans_t = repmat(gmeans,[nsub,levels,1]);
+
+% calculate SS
+SSfac = sum((cmeans-gmeans_c).^2,2)*nsub;
+SSsub = sum((smeans-gmeans_s).^2,1)*levels;
+SStot = sum(sum((occimgs - gmeans_t).^2));
+SSw = SStot-SSsub;
+SSerr = SSw-SSfac;
+
+% calculate MS and F
+MSfac = SSfac./(levels-1);
+MSerr = SSerr./((levels-1)*(nsub-1));
+fvals = MSfac./MSerr;
+
+% perform TFCE
 truestat = zeros(bsize);
 truestat(implicitmask) = fvals;
 tfcestat = transform(truestat,H,E,C,dh);
@@ -65,11 +80,12 @@ for p = 1:nperm
     end
     
     % calculate permutation statistic
-    rfvals = NaN(nvox,1);
-    for v = 1:nvox
-        [~,table] = anova_rm(roccimgs(:,:,v),'off');
-        rfvals(v) = table{2,5};
-    end
+    rcmeans = mean(roccimgs,1);
+    rSSfac = sum((rcmeans-gmeans_c).^2,2)*nsub;
+    rSSerr = SSw-rSSfac;
+    rMSfac = rSSfac./(levels-1);
+    rMSerr = rSSerr./((levels-1)*(nsub-1));
+    rfvals = rMSfac./rMSerr;
     rbrain = zeros(bsize);
     rbrain(implicitmask) = rfvals;
     rbrain = transform(rbrain,H,E,C,dh);

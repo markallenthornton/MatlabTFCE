@@ -46,21 +46,49 @@ for i = 1:levels(1)
     end
 end
 
-% calculate true f-stat image
-S = repmat((1:nsub)',levels(1)*levels(2),1);
-F1 = repmat(sort(repmat((1:levels(1))',nsub,1)),levels(2),1);
-F2 = sort(repmat((1:levels(2))',nsub*levels(1),1));
-fvals1 = NaN(nvox,1);
-fvals2 = NaN(nvox,1);
-fvalsi = NaN(nvox,1);
-for v = 1:nvox
-    curimg = occimgs(:,:,:,v);
-    Y = curimg(:);
-    stats = rm_anova2(Y,S,F1,F2,{'F1','F2'});
-    fvals1(v) = stats{2,5};
-    fvals2(v) = stats{3,5};
-    fvalsi(v) = stats{4,5};
-end
+% calculate means
+smeans = mean(mean(occimgs,2),3);
+c1means = mean(mean(occimgs,1),3);
+c2means = mean(mean(occimgs,1),2);
+c1smeans = mean(occimgs,3);
+c2smeans = mean(occimgs,2);
+ccmeans = mean(occimgs,1);
+gmeans = mean(mean(mean(occimgs)));
+gmeans_c1 = repmat(gmeans,[1,levels(1),1,1]);
+gmeans_c2 = repmat(gmeans,[1,1,levels(2),1]);
+gmeans_c1s = repmat(gmeans,[nsub,levels(1),1,1]);
+gmeans_c2s = repmat(gmeans,[nsub,1,levels(2),1]);
+gmeans_cc = repmat(gmeans,[1,levels(1),levels(2),1]);
+gmeans_s = repmat(gmeans,[nsub,1,1,1]);
+gmeans_t = repmat(gmeans,[nsub,levels(1),levels(2),1]);
+
+% calculate SS
+SSfac1 = sum((c1means-gmeans_c1).^2,2)*levels(2)*nsub;
+SSfac2 = sum((c2means-gmeans_c2).^2,3)*levels(1)*nsub;
+SScell = sum(sum((ccmeans-gmeans_cc).^2,2),3)*nsub;
+SSsub = sum((smeans-gmeans_s).^2,1)*levels(1)*levels(2);
+SSc1s = sum(sum((c1smeans-gmeans_c1s).^2,2),1)*levels(2);
+SSc2s = sum(sum((c2smeans-gmeans_c2s).^2,3),1)*levels(1);
+SStot = sum(sum(sum((occimgs - gmeans_t).^2)));
+SSerr1 = SSc1s - SSfac1 - SSsub; 
+SSerr2 = SSc2s - SSfac2 - SSsub; 
+SSint = SScell - SSfac1 - SSfac2;
+SSerr = SStot-SSfac1-SSfac2-SSint-SSerr1-SSerr2-SSsub;
+
+% calculate MS
+MSfac1 = SSfac1./(levels(1)-1);
+MSfac2 = SSfac2./(levels(2)-1);
+MSint = SSint./((levels(1)-1)*(levels(2)-1));
+MSerr1 = SSerr1./((levels(1)-1)*(nsub-1));
+MSerr2 = SSerr2./((levels(2)-1)*(nsub-1));
+MSerr = SSerr./((levels(1)-1)*(levels(2)-1)*(nsub-1));
+
+% calculate F
+fvals1 = MSfac1./MSerr1;
+fvals2 = MSfac2./MSerr2;
+fvalsi = MSint./MSerr;
+
+% perform TFCE
 truestat1 = zeros(bsize);
 truestat2 = zeros(bsize);
 truestati = zeros(bsize);
@@ -88,18 +116,38 @@ for p = 1:nperm
         roccimgs(s,relabeling1,relabeling2,:) = roccimgs(s,:,:,:);
     end
     
-    % calculate permutation statistic
-    rfvals1 = NaN(nvox,1);
-    rfvals2 = NaN(nvox,1);
-    rfvalsi = NaN(nvox,1);
-    for v = 1:nvox
-        curimg = roccimgs(:,:,:,v);
-        Y = curimg(:);
-        stats = rm_anova2(Y,S,F1,F2,{'F1','F2'});
-        rfvals1(v) = stats{2,5};
-        rfvals2(v) = stats{3,5};
-        rfvalsi(v) = stats{4,5};
-    end
+    % calculate permuted means
+    rc1means = mean(mean(occimgs,1),3);
+    rc2means = mean(mean(occimgs,1),2);
+    rc1smeans = mean(occimgs,3);
+    rc2smeans = mean(occimgs,2);
+    rccmeans = mean(occimgs,1);
+    
+    % calculate SS
+    rSSfac1 = sum((rc1means-gmeans_c1).^2,2)*levels(2)*nsub;
+    rSSfac2 = sum((rc2means-gmeans_c2).^2,3)*levels(1)*nsub;
+    rSScell = sum(sum((rccmeans-gmeans_cc).^2,2),3)*nsub;
+    rSSc1s = sum(sum((rc1smeans-gmeans_c1s).^2,2),1)*levels(2);
+    rSSc2s = sum(sum((rc2smeans-gmeans_c2s).^2,3),1)*levels(1);
+    rSSerr1 = rSSc1s - rSSfac1 - SSsub; 
+    rSSerr2 = rSSc2s - rSSfac2 - SSsub; 
+    rSSint = rSScell - rSSfac1 - rSSfac2;
+    rSSerr = SStot-rSSfac1-rSSfac2-rSSint-rSSerr1-rSSerr2-SSsub;
+
+    % calculate MS
+    rMSfac1 = rSSfac1./(levels(1)-1);
+    rMSfac2 = rSSfac2./(levels(2)-1);
+    rMSint = rSSint./((levels(1)-1)*(levels(2)-1));
+    rMSerr1 = rSSerr1./((levels(1)-1)*(nsub-1));
+    rMSerr2 = rSSerr2./((levels(2)-1)*(nsub-1));
+    rMSerr = rSSerr./((levels(1)-1)*(levels(2)-1)*(nsub-1));
+
+    % calculate F
+    rfvals1 = rMSfac1./rMSerr1;
+    rfvals2 = rMSfac2./rMSerr2;
+    rfvalsi = rMSint./rMSerr;
+    
+    % perform TFCE
     rbrain1 = zeros(bsize);
     rbrain2 = zeros(bsize);
     rbraini = zeros(bsize);
@@ -112,7 +160,6 @@ for p = 1:nperm
     rstats1 = rbrain1(implicitmask);
     rstats2 = rbrain2(implicitmask);
     rstatsi = rbraini(implicitmask);
-
     
     % compare maxima to true statistic and increment as appropriate
     curexceeds1 = max(rstats1) >= tfcestat1;
