@@ -41,6 +41,7 @@ for i = 1:levels
         occimgs(s,i,:) = curimg(implicitmask);
     end
 end
+clear imgs curimg
 
 % calculate means
 smeans = mean(occimgs,2);
@@ -48,12 +49,15 @@ cmeans = mean(occimgs,1);
 gmeans = mean(mean(occimgs));
 gmeans_c = repmat(gmeans,[1,levels,1]);
 gmeans_s = repmat(gmeans,[nsub,1,1]);
-gmeans_t = repmat(gmeans,[nsub,levels,1]);
 
 % calculate SS
 SSfac = sum((cmeans-gmeans_c).^2,2)*nsub;
 SSsub = sum((smeans-gmeans_s).^2,1)*levels;
-SStot = sum(sum((occimgs - gmeans_t).^2));
+SStot = NaN([1,1,nvox]);
+for v = 1:nvox
+    diffs = occimgs(:,:,v)-gmeans(v);
+    SStot(v) = sum(diffs(:).^2);
+end
 SSw = SStot-SSsub;
 SSerr = SSw-SSfac;
 
@@ -70,23 +74,22 @@ tfcestat = tfcestat(implicitmask);
 
 % cycle through permutations
 exceedances = zeros(nvox,1);
+rbrain = zeros(bsize);
 for p = 1:nperm
     
     % permute labels
-    roccimgs = occimgs;
     for s = 1:nsub
         relabeling = randsample(levels,levels);
-        roccimgs(s,relabeling,:) = roccimgs(s,:,:);
+        occimgs(s,relabeling,:) = occimgs(s,:,:);
     end
     
     % calculate permutation statistic
-    rcmeans = mean(roccimgs,1);
+    rcmeans = mean(occimgs,1);
     rSSfac = sum((rcmeans-gmeans_c).^2,2)*nsub;
     rSSerr = SSw-rSSfac;
     rMSfac = rSSfac./(levels-1);
     rMSerr = rSSerr./((levels-1)*(nsub-1));
     rfvals = rMSfac./rMSerr;
-    rbrain = zeros(bsize);
     rbrain(implicitmask) = rfvals;
     rbrain = transform(rbrain,H,E,C,dh);
     rstats = rbrain(implicitmask);

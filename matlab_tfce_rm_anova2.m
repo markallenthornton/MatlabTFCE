@@ -45,6 +45,7 @@ for i = 1:levels(1)
         end
     end
 end
+clear imgs curimg
 
 % calculate means
 smeans = mean(mean(occimgs,2),3);
@@ -60,7 +61,6 @@ gmeans_c1s = repmat(gmeans,[nsub,levels(1),1,1]);
 gmeans_c2s = repmat(gmeans,[nsub,1,levels(2),1]);
 gmeans_cc = repmat(gmeans,[1,levels(1),levels(2),1]);
 gmeans_s = repmat(gmeans,[nsub,1,1,1]);
-gmeans_t = repmat(gmeans,[nsub,levels(1),levels(2),1]);
 
 % calculate SS
 SSfac1 = sum((c1means-gmeans_c1).^2,2)*levels(2)*nsub;
@@ -69,7 +69,11 @@ SScell = sum(sum((ccmeans-gmeans_cc).^2,2),3)*nsub;
 SSsub = sum((smeans-gmeans_s).^2,1)*levels(1)*levels(2);
 SSc1s = sum(sum((c1smeans-gmeans_c1s).^2,2),1)*levels(2);
 SSc2s = sum(sum((c2smeans-gmeans_c2s).^2,3),1)*levels(1);
-SStot = sum(sum(sum((occimgs - gmeans_t).^2)));
+SStot = NaN([1,1,1,nvox]);
+for v = 1:nvox
+    diffs = occimgs(:,:,:,v)-gmeans(v);
+    SStot(v) = sum(diffs(:).^2);
+end
 SSerr1 = SSc1s - SSfac1 - SSsub; 
 SSerr2 = SSc2s - SSfac2 - SSsub; 
 SSint = SScell - SSfac1 - SSfac2;
@@ -106,22 +110,24 @@ tfcestati = tfcestati(implicitmask);
 exceedances1 = zeros(nvox,1);
 exceedances2 = zeros(nvox,1);
 exceedancesi = zeros(nvox,1);
+rbrain1 = zeros(bsize);
+rbrain2 = zeros(bsize);
+rbraini = zeros(bsize);
 for p = 1:nperm
     
     % permute labels
-    roccimgs = occimgs;
     for s = 1:nsub
         relabeling1 = randsample(levels(1),levels(1));
         relabeling2 = randsample(levels(2),levels(2));
-        roccimgs(s,relabeling1,relabeling2,:) = roccimgs(s,:,:,:);
+        occimgs(s,relabeling1,relabeling2,:) = occimgs(s,:,:,:);
     end
     
     % calculate permuted means
-    rc1means = mean(mean(roccimgs,1),3);
-    rc2means = mean(mean(roccimgs,1),2);
-    rc1smeans = mean(roccimgs,3);
-    rc2smeans = mean(roccimgs,2);
-    rccmeans = mean(roccimgs,1);
+    rc1means = mean(mean(occimgs,1),3);
+    rc2means = mean(mean(occimgs,1),2);
+    rc1smeans = mean(occimgs,3);
+    rc2smeans = mean(occimgs,2);
+    rccmeans = mean(occimgs,1);
     
     % calculate SS
     rSSfac1 = sum((rc1means-gmeans_c1).^2,2)*levels(2)*nsub;
@@ -148,9 +154,6 @@ for p = 1:nperm
     rfvalsi = rMSint./rMSerr;
     
     % perform TFCE
-    rbrain1 = zeros(bsize);
-    rbrain2 = zeros(bsize);
-    rbraini = zeros(bsize);
     rbrain1(implicitmask) = rfvals1;
     rbrain2(implicitmask) = rfvals2;
     rbraini(implicitmask) = rfvalsi;
