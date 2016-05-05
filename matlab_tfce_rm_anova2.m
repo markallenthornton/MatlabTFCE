@@ -117,11 +117,11 @@ for p = 1:nperm
     end
     
     % calculate permuted means
-    rc1means = mean(mean(occimgs,1),3);
-    rc2means = mean(mean(occimgs,1),2);
-    rc1smeans = mean(occimgs,3);
-    rc2smeans = mean(occimgs,2);
-    rccmeans = mean(occimgs,1);
+    rc1means = mean(mean(roccimgs,1),3);
+    rc2means = mean(mean(roccimgs,1),2);
+    rc1smeans = mean(roccimgs,3);
+    rc2smeans = mean(roccimgs,2);
+    rccmeans = mean(roccimgs,1);
     
     % calculate SS
     rSSfac1 = sum((rc1means-gmeans_c1).^2,2)*levels(2)*nsub;
