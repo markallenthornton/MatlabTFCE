@@ -191,7 +191,7 @@ end
 
 % check the subject number is the same for paired tests
 if strcmp(analysis,'paired')
-    if bsize1(4) ~= bsize2(4)
+    if bsize(4) ~= bsize2(4)
         error('The 4th (subject number) dimension of imgs1 and imgs2 must match for paired tests');
     end
 end
