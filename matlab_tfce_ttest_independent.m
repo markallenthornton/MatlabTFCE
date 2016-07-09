@@ -64,7 +64,8 @@ exceedances = zeros(nvox,1);
 for p = 1:nperm
     
     % permute signs
-    relabeling = randsample(glabs,nsub);
+    rsel = randperm(nsub)';
+    relabeling = glabs(rsel);
     rimgs1 = occimgs(:,relabeling==1);
     rimgs2 = occimgs(:,relabeling==2);
     

@@ -60,10 +60,10 @@ exceedances = zeros(nvox,1);
 for p = 1:nperm
     
     % permute signs
-    relabeling = randsample([-1 1],nsub,'true');
+    relabeling = randi([0,1],nsub,1);
     roccimgs = occimgs;
     for s = 1:nsub
-        if relabeling(s) == -1;
+        if relabeling(s) == 1;
             roccimgs(:,s) = -occimgs(:,s);
         end
     end

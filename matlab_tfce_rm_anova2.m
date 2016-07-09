@@ -117,8 +117,8 @@ for p = 1:nperm
     
     % permute labels
     for s = 1:nsub
-        relabeling1 = randsample(levels(1),levels(1));
-        relabeling2 = randsample(levels(2),levels(2));
+        relabeling1 = randperm(levels(1))';
+        relabeling2 = randperm(levels(2))';
         occimgs(s,relabeling1,relabeling2,:) = occimgs(s,:,:,:);
     end
     

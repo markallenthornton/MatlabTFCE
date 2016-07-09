@@ -63,7 +63,8 @@ exceedances = zeros(nvox,1);
 for p = 1:nperm
     
     % permute covariates
-    rcov = randsample(covariate,nsub);
+    rsel = randperm(nsub);
+    rcov = covariate(rsel);
     
     % calculate permutation correlations
     rstats = corr(occimgs,rcov);
