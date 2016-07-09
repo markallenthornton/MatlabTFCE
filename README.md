@@ -35,6 +35,8 @@ The following statistical tests can be computed:
 
 'rm_anova2' -- two-factor (with interaction) repeated measures ANOVA
 
+'regression' -- multiple linear regression
+
 Other than the ANOVAs, all tests permit both one- and two-tailed modes. See the demo script to observe proof of familywise error rate control under trivial conditions. The TFCE transformation itself and the paired/one-sample t-test routines have been validated directly against FSL's randomise using real fMRI data. Default parameter settings were also adopted from FSL.
 
 See here for additional information: http://markallenthornton.com/blog/matlab-tfce/
