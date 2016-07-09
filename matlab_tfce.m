@@ -39,6 +39,7 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 %   -- 'correlation' -- correlation across subjects of imgs with covariate
 %   -- 'rm_anova1' -- one-factor repeated measures ANOVA
 %   -- 'rm_anova2' -- two-factor repeated measures ANOVA
+%   -- 'regression' -- multiple linear regression with covariate matrix
 %
 % tails -- specify a 1 or 2 tailed test (unidirectional or bidirectional)
 % that can be combined with t-tests and correlations. Ignored 
@@ -57,8 +58,13 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 % analysis is paired, subject number must match as well. Note that this 
 % argument is not used for repeated measures anovas.
 %
-% covariate -- a subject x 1 matrix containing an individual difference
-% covariate for correlation across subjects with voxelwise activity.
+% covariate -- If analysis type is 'correlation', a subject x 1 matrix 
+% containing an individual difference covariate for correlation across 
+% subjects with voxelwise activity. If analysis is 'regression', a
+% subject x predictor matrix consisting of multiple covariates. First
+% column must be constant 1s for intercept. Compatible with categorical
+% predictors (e.g. between-subjects ANOVA), but coding/contrasts are not
+% handled internally and must be built into predictor matrix a priori.
 % 
 % nperm -- number of permutations to perform. default = 5000
 %
@@ -87,6 +93,14 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 % each main effect and the interaction term. The first main effect
 % corresponds to the rows of the input cell array, and the second main
 % effect corresponds to the columns of the input cell array.
+%
+% If analysis == regression, output will be 1 or 2 cell arrays (depending
+% on 'tails'). If 1 tail is requested, the array will consist of images
+% equal in number to the predictors in the 'covariate' matrix (and in the
+% same order). Each corrected p-value image will represent the hypothesis
+% that the given coefficient > 0. If 2 tails are requested, the first will
+% reflect the same as the above, and the second will reflect the opposite 
+% direction of the test (coefficients < 0).
 %
 % Note that for convenience, if using matlab_tfce_gui.m, result images will
 % be written out as 1-pcorr instead.
@@ -205,11 +219,15 @@ if strcmp(analysis,'rm_anova1') || strcmp(analysis,'rm_anova2')
 end
 
 % check covariate
-covariate = covariate(:);
 if strcmp(analysis,'correlation')
+    covariate = covariate(:);
     if length(covariate) ~= bsize(4)
         error('Covariate length does not equal 4th dimension of images');
     end
+elseif strcmp(analysis,'regression')
+    if size(covariate,1) ~= bsize(4)
+        error('Covariate length does not equal 4th dimension of images');
+    end  
 end
 
 %% analysis calls
@@ -256,6 +274,14 @@ switch analysis
     % repeated measure (within subject) two-way factorial ANOVA
     case 'rm_anova2'
         [pcorr_fac1,pcorr_fac2,pcorr_int] = matlab_tfce_rm_anova2(imgs,nperm,H,E,C,dh);
+        
+    % multiple regression 
+    case 'regression'
+        if tails == 1
+            pcorr = matlab_tfce_regrssion(imgs,covariate,tails,nperm,H,E,C,dh);
+        else
+            [pcorr_pos,pcorr_neg] = matlab_tfce_regression(imgs,covariate,tails,nperm,H,E,C,dh);
+        end
         
     % unrecognized analysis input
     otherwise

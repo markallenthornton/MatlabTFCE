@@ -79,3 +79,15 @@ end
 sum(fp1)/nsim % false positive rate
 sum(fp2)/nsim % false positive rate
 sum(fpi)/nsim % false positive rate
+
+%% multiple regression
+fp = NaN(nsim,5);
+for i = 1:nsim
+    imgs = randn(4,4,4,20);
+    covariate = [ones(20,1) randn(20,4)];
+    [pcorr_pos,pcorr_neg] = matlab_tfce('regression',2,imgs,[],covariate);
+    for j = 1:5
+        fp(i,j) = sum(pcorr_pos{j}(:)<.05)+sum(pcorr_neg{j}(:)<.05);
+    end
+end
+sum(fp)/nsim

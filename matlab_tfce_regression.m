@@ -104,10 +104,10 @@ for p = 1:nperm
         serr(:,i) = diag(sxy(i)*sqp);
     end
 
-    rstats = bs./serr;
+    rtstats = bs./serr;
     for i = 1:npred
         rbrain=NaN(bsize);
-        rbrain(implicitmask) = rstats(i,:);
+        rbrain(implicitmask) = rtstats(i,:);
         rbrain = transform(rbrain,H,E,C,dh);
         rstats = rbrain(implicitmask);
         if tails == 2
