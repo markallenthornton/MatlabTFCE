@@ -278,7 +278,7 @@ switch analysis
     % multiple regression 
     case 'regression'
         if tails == 1
-            pcorr = matlab_tfce_regrssion(imgs,covariate,tails,nperm,H,E,C,dh);
+            pcorr = matlab_tfce_regression(imgs,covariate,tails,nperm,H,E,C,dh);
         else
             [pcorr_pos,pcorr_neg] = matlab_tfce_regression(imgs,covariate,tails,nperm,H,E,C,dh);
         end

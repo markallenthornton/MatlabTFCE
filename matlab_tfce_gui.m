@@ -8,18 +8,19 @@ anafig = figure('Name','MatlabTFCE',...
                       'Toolbar','none', ...
                       'NumberTitle','off', ...
                       'Resize', 'off', ...
-                      'Position',[450,400,360,200]); %X,Y then Width, Height
+                      'Position',[450,400,360,270]); %X,Y then Width, Height
 set(anafig, 'Color', ([128,0,0] ./255)); 
 uipanel('Title','Select analysis',...
              'BackgroundColor','white',...
              'Units','Pixels',...
-             'Position',[10 10 340 190]);
-uicontrol('Style','PushButton','HorizontalAlignment','left','String','One-sample t-test','Position',[20,140,150,40],'Callback',{@anadiag, 'onesample'});
-uicontrol('Style','PushButton','HorizontalAlignment','left','String','Paired-sample t-test','Position',[190,140,150,40],'Callback',{@anadiag, 'paired'});
-uicontrol('Style','PushButton','HorizontalAlignment','left','String','Indepedent-sample t-test','Position',[20,80,150,40],'Callback',{@anadiag, 'independent'});
-uicontrol('Style','PushButton','HorizontalAlignment','left','String','Correlation test','Position',[190,80,150,40],'Callback',{@anadiag, 'correlation'});
-uicontrol('Style','PushButton','HorizontalAlignment','left','String','One-way RM ANOVA','Position',[20,20,150,40],'Callback',{@anadiag, 'rm_anova1'});
-uicontrol('Style','PushButton','HorizontalAlignment','left','String','Two-way RM ANOVA','Position',[190,20,150,40],'Callback',{@anadiag, 'rm_anova2'});
+             'Position',[10 10 340 260]);
+uicontrol('Style','PushButton','HorizontalAlignment','left','String','One-sample t-test','Position',[20,200,150,40],'Callback',{@anadiag, 'onesample'});
+uicontrol('Style','PushButton','HorizontalAlignment','left','String','Paired-sample t-test','Position',[190,200,150,40],'Callback',{@anadiag, 'paired'});
+uicontrol('Style','PushButton','HorizontalAlignment','left','String','Indepedent-sample t-test','Position',[20,140,150,40],'Callback',{@anadiag, 'independent'});
+uicontrol('Style','PushButton','HorizontalAlignment','left','String','Correlation test','Position',[190,140,150,40],'Callback',{@anadiag, 'correlation'});
+uicontrol('Style','PushButton','HorizontalAlignment','left','String','One-way RM ANOVA','Position',[20,80,150,40],'Callback',{@anadiag, 'rm_anova1'});
+uicontrol('Style','PushButton','HorizontalAlignment','left','String','Two-way RM ANOVA','Position',[190,80,150,40],'Callback',{@anadiag, 'rm_anova2'});
+uicontrol('Style','PushButton','HorizontalAlignment','left','String','Multiple linear regression','Position',[105,20,150,40],'Callback',{@anadiag, 'regression'});
 end
 
 function anadiag(~,~,analysis)
@@ -35,9 +36,9 @@ function anadiag(~,~,analysis)
         [imgs2,~] = imgreader(filenames2,pathnames2);
         imgs = {imgs1,imgs2};
     else
-        if strcmp(analysis,'correlation')
+        if strcmp(analysis,'correlation') || strcmp(analysis,'regression')
             [filenames, pathnames] = uigetfile({'*.nii';'*.img'},'Select images (in order of covariate)','MultiSelect', 'on');
-            [covname, covpath] = uigetfile('*.csv','Select csv with covariate','MultiSelect', 'off');
+            [covname, covpath] = uigetfile('*.csv','Select csv with covariate(s)','MultiSelect', 'off');
             if ~(ischar(covname) && ischar(covpath))
                 error('Only one covariate file permitted');
             end
@@ -261,6 +262,18 @@ if strcmp(analysis,'rm_anova2')
 elseif tails == 1
     fname = [ananame '_' analysis '_pcorr.nii'];
     write_res(fname,niiout,pcorr);
+elseif strcmp(analysis,'regression')
+    for i = 1:size(covariate,2)
+        if tails == 1
+            fname = [ananame '_' analysis '_b' num2str(i-1) '_pcorr.nii'];
+            write_res(fname,niiout,pcorr{i})
+        else
+            fname = [ananame '_' analysis '_b' num2str(i-1) '_pcorr_positive.nii'];
+            write_res(fname,niiout,pcorr_pos{i})
+            fname = [ananame '_' analysis '_b' num2str(i-1) '_pcorr_negative.nii'];
+            write_res(fname,niiout,pcorr_neg{i})
+        end
+    end
 else
     fname = [ananame '_' analysis '_pcorr_positive.nii'];
     write_res(fname,niiout,pcorr_pos);

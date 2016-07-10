@@ -69,14 +69,15 @@ for i = 1:nvox
 end
 
 truestat = bs./serr;
+tvals = NaN(npred,nvox);
 for i = 1:npred
     trueimg=NaN(bsize);
     trueimg(implicitmask) = truestat(i,:);
     trueimg = transform(trueimg,H,E,C,dh);
     tfcestat = trueimg(implicitmask);
-    tvals = tfcestat;
+    tvals(i,:) = tfcestat;
     if tails == 2
-        tvals = abs(tfcestat);
+        tvals(i,:) = abs(tfcestat);
     end  
 end
 
@@ -114,8 +115,8 @@ for p = 1:nperm
             rstats = abs(rstats);
         end  
         % compare maxima to t-values and increment as appropriate
-        curexceeds = max(rstats) >= tvals;
-        exceedances(:,i) = exceedances(:,i) + curexceeds;
+        curexceeds = max(rstats) >= tvals(i,:);
+        exceedances(:,i) = exceedances(:,i) + curexceeds';
     end
     
 end
