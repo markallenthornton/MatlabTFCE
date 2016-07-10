@@ -1,5 +1,6 @@
 % fwe_control.m
 % demo of package's control over familywise error rate
+nsim = 1000;
 %% one sample ttest, one-sided
 fp = NaN(nsim,1);
 for i = 1:nsim
