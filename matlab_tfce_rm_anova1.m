@@ -72,6 +72,10 @@ truestat(implicitmask) = fvals;
 tfcestat = transform(truestat,H,E,C,dh);
 tfcestat = tfcestat(implicitmask);
 
+% initialize progress indicator
+fprintf('Completed: %3d%%', 0);
+indicatorSteps = round(nperm/100);
+
 % cycle through permutations
 exceedances = zeros(nvox,1);
 rbrain = zeros(bsize);
@@ -97,6 +101,11 @@ for p = 1:nperm
     % compare maxima to true statistic and increment as appropriate
     curexceeds = max(rstats) >= tfcestat;
     exceedances = exceedances + curexceeds;
+    
+    % update progress indicator every percentage point
+    if ~mod(p,indicatorSteps) || p==nperm
+        fprintf(sprintf('%s%%3d%%%%', repmat('\b', 1, 4)), round(100*p/nperm));
+    end
 end
 
 % create corrected p-value image

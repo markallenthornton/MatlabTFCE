@@ -106,6 +106,10 @@ tfcestat1 = tfcestat1(implicitmask);
 tfcestat2 = tfcestat2(implicitmask);
 tfcestati = tfcestati(implicitmask);
 
+% initialize progress indicator
+fprintf('Completed: %3d%%', 0);
+indicatorSteps = round(nperm/100);
+
 % cycle through permutations
 exceedances1 = zeros(nvox,1);
 exceedances2 = zeros(nvox,1);
@@ -171,6 +175,12 @@ for p = 1:nperm
     exceedances1 = exceedances1 + curexceeds1;
     exceedances2 = exceedances2 + curexceeds2;
     exceedancesi = exceedancesi + curexceedsi;
+    
+    % update progress indicator every percentage point
+    if ~mod(p,indicatorSteps) || p==nperm
+        fprintf(sprintf('%s%%3d%%%%', repmat('\b', 1, 4)), round(100*p/nperm));
+    end
+    
 end
 
 % create corrected p-value image

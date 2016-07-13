@@ -81,9 +81,13 @@ for i = 1:npred
     end  
 end
 
+% initialize progress indicator
+fprintf('Completed: %3d%%', 0);
+indicatorSteps = round(nperm/100);
+
 % cycle through permutations
 exceedances = zeros(nvox,npred);
-for p = 1:nperm
+for p = 1:nperm,parworkers
     
     % permute predictors
     rsel = randperm(nsub);
@@ -117,6 +121,11 @@ for p = 1:nperm
         % compare maxima to t-values and increment as appropriate
         curexceeds = max(rstats) >= tvals(i,:);
         exceedances(:,i) = exceedances(:,i) + curexceeds';
+    end
+    
+    % update progress indicator every percentage point
+    if ~mod(p,indicatorSteps) || p==nperm
+        fprintf(sprintf('%s%%3d%%%%', repmat('\b', 1, 4)), round(100*p/nperm));
     end
     
 end

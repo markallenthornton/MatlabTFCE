@@ -42,7 +42,7 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 %   -- 'regression' -- multiple linear regression with covariate matrix
 %
 % tails -- specify a 1 or 2 tailed test (unidirectional or bidirectional)
-% that can be combined with t-tests and correlations. Ignored 
+% that can be combined with t-tests and correlations.
 %
 % imgs -- a 4D matrix of imaging data for analysis. Dimensions are expected
 % to be x,y,z,subject. Alternatively, for repeated measures ANOVAs, a cell
@@ -185,6 +185,9 @@ elseif length(bsize) ~= 4
     error('Image data not 4D - must be x-y-z-subject')
 elseif bsize(4) < 13
     warning('Low N limits number of unique permutations. Approximate (vs. exact) permutation may not be appropriate.');
+    nsub = bsize(4);
+else
+    nsub = bsize(4);
 end
 
 % check properties of imgs2
@@ -197,6 +200,7 @@ if ~isempty(imgs2)
     if sum(bsize(1:3) == bsize(1:3)) ~= 3
         error('XYZ dimensions of imgs and imgs2 do not match');
     end
+    nsub = bsize(4) + bsize2(4);
 else
     if (strcmp(analysis,'independent') || strcmp(analysis,'paired'))
         error('The imgs2 argument must be specified for this analysis type.');
@@ -207,15 +211,18 @@ end
 if strcmp(analysis,'paired')
     if bsize(4) ~= bsize2(4)
         error('The 4th (subject number) dimension of imgs1 and imgs2 must match for paired tests');
+    else
+        nsub = bsize(4);
     end
 end
 
 % check the subject number is the same for repeated measures anovas
 if strcmp(analysis,'rm_anova1') || strcmp(analysis,'rm_anova2')
-    subns = cellfun(@(x) size(x,4),imgs);
-    if length(unique(subns)) > 1
+    nsub = cellfun(@(x) size(x,4),imgs);
+    if length(unique(nsub)) > 1
         error('Not an equal number of images in each cell')
     end
+    nsub = nsub(1);
 end
 
 % check covariate
@@ -223,14 +230,23 @@ if strcmp(analysis,'correlation')
     covariate = covariate(:);
     if length(covariate) ~= bsize(4)
         error('Covariate length does not equal 4th dimension of images');
+    else
+        nsub = bsize(4);
     end
 elseif strcmp(analysis,'regression')
     if size(covariate,1) ~= bsize(4)
         error('Covariate length does not equal 4th dimension of images');
+    else
+        nsub = bsize(4);
     end  
 end
 
 %% analysis calls
+
+% indicate analysis start
+fprintf('Starting %i-tailed %s analysis...\n',[tails,analysis]);
+fprintf('Permuting data from %i subjects %i times\n',[nsub,nperm])
+
 % select appropriate analysis
 switch analysis
     
@@ -301,6 +317,7 @@ else
     varargout{1} = pcorr_pos;
     varargout{2} = pcorr_neg;
 end
+fprintf('Permutation TFCE complete!\n');
 
 end
 

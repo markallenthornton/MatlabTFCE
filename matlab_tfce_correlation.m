@@ -58,6 +58,10 @@ if tails == 2
 	cvals = abs(tfcestat);
 end
 
+% initialize progress indicator
+fprintf('Completed: %3d%%', 0);
+indicatorSteps = round(nperm/100);
+
 % cycle through permutations
 exceedances = zeros(nvox,1);
 for p = 1:nperm
@@ -79,6 +83,12 @@ for p = 1:nperm
     % compare maxima to t-values and increment as appropriate
     curexceeds = max(rstats) >= cvals;
     exceedances = exceedances + curexceeds;
+    
+    % update progress indicator every percentage point
+    if ~mod(p,indicatorSteps) || p==nperm
+        fprintf(sprintf('%s%%3d%%%%', repmat('\b', 1, 4)), round(100*p/nperm));
+    end
+    
 end
 
 % create corrected p-value image
