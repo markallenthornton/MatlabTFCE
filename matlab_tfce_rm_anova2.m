@@ -107,31 +107,29 @@ tfcestat2 = tfcestat2(implicitmask);
 tfcestati = tfcestati(implicitmask);
 
 % initialize progress indicator
-fprintf('Completed: %3d%%', 0);
-indicatorSteps = round(nperm/100);
+parfor_progress(nperm);
+global parworkers
 
 % cycle through permutations
 exceedances1 = zeros(nvox,1);
 exceedances2 = zeros(nvox,1);
 exceedancesi = zeros(nvox,1);
-rbrain1 = zeros(bsize);
-rbrain2 = zeros(bsize);
-rbraini = zeros(bsize);
-for p = 1:nperm
+parfor(p = 1:nperm,parworkers)
     
     % permute labels
+    roccimgs = NaN(size(occimgs));
     for s = 1:nsub
         relabeling1 = randperm(levels(1))';
         relabeling2 = randperm(levels(2))';
-        occimgs(s,relabeling1,relabeling2,:) = occimgs(s,:,:,:);
+        roccimgs(s,relabeling1,relabeling2,:) = occimgs(s,:,:,:);
     end
     
     % calculate permuted means
-    rc1means = mean(mean(occimgs,1),3);
-    rc2means = mean(mean(occimgs,1),2);
-    rc1smeans = mean(occimgs,3);
-    rc2smeans = mean(occimgs,2);
-    rccmeans = mean(occimgs,1);
+    rc1means = mean(mean(roccimgs,1),3);
+    rc2means = mean(mean(roccimgs,1),2);
+    rc1smeans = mean(roccimgs,3);
+    rc2smeans = mean(roccimgs,2);
+    rccmeans = mean(roccimgs,1);
     
     % calculate SS
     rSSfac1 = sum((rc1means-gmeans_c1).^2,2)*levels(2)*nsub;
@@ -158,6 +156,9 @@ for p = 1:nperm
     rfvalsi = rMSint./rMSerr;
     
     % perform TFCE
+    rbrain1 = zeros(bsize);
+    rbrain2 = zeros(bsize);
+    rbraini = zeros(bsize);
     rbrain1(implicitmask) = rfvals1;
     rbrain2(implicitmask) = rfvals2;
     rbraini(implicitmask) = rfvalsi;
@@ -176,9 +177,9 @@ for p = 1:nperm
     exceedances2 = exceedances2 + curexceeds2;
     exceedancesi = exceedancesi + curexceedsi;
     
-    % update progress indicator every percentage point
-    if ~mod(p,indicatorSteps) || p==nperm
-        fprintf(sprintf('%s%%3d%%%%', repmat('\b', 1, 4)), round(100*p/nperm));
+    % update progress indicator (only does so 1 in 5 to minimize overhead)
+    if ~randi([0 4]);
+        parfor_progress;
     end
     
 end

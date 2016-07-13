@@ -73,27 +73,28 @@ tfcestat = transform(truestat,H,E,C,dh);
 tfcestat = tfcestat(implicitmask);
 
 % initialize progress indicator
-fprintf('Completed: %3d%%', 0);
-indicatorSteps = round(nperm/100);
+parfor_progress(nperm);
+global parworkers
 
 % cycle through permutations
 exceedances = zeros(nvox,1);
-rbrain = zeros(bsize);
-for p = 1:nperm
+parfor(p = 1:nperm,parworkers)
     
     % permute labels
+    roccimgs = NaN(size(occimgs));
     for s = 1:nsub
         relabeling = randperm(levels)';
-        occimgs(s,relabeling,:) = occimgs(s,:,:);
+        roccimgs(s,relabeling,:) = occimgs(s,:,:);
     end
     
     % calculate permutation statistic
-    rcmeans = mean(occimgs,1);
+    rcmeans = mean(roccimgs,1);
     rSSfac = sum((rcmeans-gmeans_c).^2,2)*nsub;
     rSSerr = SSw-rSSfac;
     rMSfac = rSSfac./(levels-1);
     rMSerr = rSSerr./((levels-1)*(nsub-1));
     rfvals = rMSfac./rMSerr;
+    rbrain = zeros(bsize);
     rbrain(implicitmask) = rfvals;
     rbrain = transform(rbrain,H,E,C,dh);
     rstats = rbrain(implicitmask);
@@ -102,10 +103,11 @@ for p = 1:nperm
     curexceeds = max(rstats) >= tfcestat;
     exceedances = exceedances + curexceeds;
     
-    % update progress indicator every percentage point
-    if ~mod(p,indicatorSteps) || p==nperm
-        fprintf(sprintf('%s%%3d%%%%', repmat('\b', 1, 4)), round(100*p/nperm));
+    % update progress indicator (only does so 1 in 5 to minimize overhead)
+    if ~randi([0 4]);
+        parfor_progress;
     end
+    
 end
 
 % create corrected p-value image

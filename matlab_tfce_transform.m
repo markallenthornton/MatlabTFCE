@@ -19,8 +19,8 @@ nvox = length(img(:));
 % find connected components
 vals = zeros(nvox,1);
 cc = arrayfun(@(x) bwconncomp(bsxfun(@ge,img,x),C), threshs);
-clustsize = zeros(nvox,1);
 for h = 1:ndh
+    clustsize = zeros(nvox,1);
     ccc = cc(h);
     voxpercc = cellfun(@numel,ccc.PixelIdxList);
     for c = 1:ccc.NumObjects
@@ -29,7 +29,6 @@ for h = 1:ndh
     % calculate transform
     curvals = (clustsize.^E).*(threshs(h)^H);
     vals = vals + curvals;
-    clustsize(:) = 0;
 end
 tfced = NaN(size(img));
 tfced(:) = vals;

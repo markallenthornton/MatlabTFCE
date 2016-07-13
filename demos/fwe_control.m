@@ -90,4 +90,4 @@ for i = 1:nsim
         fp(i,j) = sum(pcorr_pos{j}(:)<.05)+sum(pcorr_neg{j}(:)<.05);
     end
 end
-sum(fp)/nsim
+fp/nsim

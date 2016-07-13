@@ -82,12 +82,12 @@ for i = 1:npred
 end
 
 % initialize progress indicator
-fprintf('Completed: %3d%%', 0);
-indicatorSteps = round(nperm/100);
+parfor_progress(nperm);
+global parworkers
 
 % cycle through permutations
 exceedances = zeros(nvox,npred);
-for p = 1:nperm,parworkers
+parfor(p = 1:nperm,parworkers)
     
     % permute predictors
     rsel = randperm(nsub);
@@ -110,6 +110,7 @@ for p = 1:nperm,parworkers
     end
 
     rtstats = bs./serr;
+    curexceeds = zeros(nvox,npred);
     for i = 1:npred
         rbrain=NaN(bsize);
         rbrain(implicitmask) = rtstats(i,:);
@@ -119,13 +120,13 @@ for p = 1:nperm,parworkers
             rstats = abs(rstats);
         end  
         % compare maxima to t-values and increment as appropriate
-        curexceeds = max(rstats) >= tvals(i,:);
-        exceedances(:,i) = exceedances(:,i) + curexceeds';
+        curexceeds(:,i) = max(rstats) >= tvals(i,:);
     end
+    exceedances = exceedances + curexceeds;
     
-    % update progress indicator every percentage point
-    if ~mod(p,indicatorSteps) || p==nperm
-        fprintf(sprintf('%s%%3d%%%%', repmat('\b', 1, 4)), round(100*p/nperm));
+    % update progress indicator (only does so 1 in 5 to minimize overhead)
+    if ~randi([0 4]);
+        parfor_progress;
     end
     
 end

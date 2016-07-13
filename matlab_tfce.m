@@ -25,10 +25,10 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 % corrections, is substantially less conservative due to the fact that
 % it capitalizes on spatial dependency in the data. 
 %
-% [varargout] = matlab_tfce(analysis,tails,imgs,imgs2,covariate,nperm,H,E,C,dh)
-% [pcorr] = matlab_tfce(analysis,1,imgs,imgs2,covariate,nperm,H,E,C,dh)
-% [pcorr_pos,pcorr_neg] = matlab_tfce(analysis,2,imgs,imgs2,covariate,nperm,H,E,C,dh)
-% [pcorr_fac1,pcorr_fac2,pcorr_int] = matlab_tfce(analysis,1,imgs,imgs2,covariate,nperm,H,E,C,dh)
+% [varargout] = matlab_tfce(analysis,tails,imgs,imgs2,covariate,nperm,H,E,C,dh,parworkers)
+% [pcorr] = matlab_tfce(analysis,1,imgs,imgs2,covariate,nperm,H,E,C,dh,parworkers)
+% [pcorr_pos,pcorr_neg] = matlab_tfce(analysis,2,imgs,imgs2,covariate,nperm,H,E,C,dh,parworkers)
+% [pcorr_fac1,pcorr_fac2,pcorr_int] = matlab_tfce(analysis,1,imgs,imgs2,covariate,nperm,H,E,C,dh,parworkers)
 %
 % Arguments:
 %
@@ -42,7 +42,8 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 %   -- 'regression' -- multiple linear regression with covariate matrix
 %
 % tails -- specify a 1 or 2 tailed test (unidirectional or bidirectional)
-% that can be combined with t-tests and correlations.
+% that can be combined with t-tests, correlations, and regressions. Ignored
+% for repeated measures ANOVAs.
 %
 % imgs -- a 4D matrix of imaging data for analysis. Dimensions are expected
 % to be x,y,z,subject. Alternatively, for repeated measures ANOVAs, a cell
@@ -81,6 +82,13 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 %   The C default setting matches FSL's ramdomise default setting. To
 %   match SPM's default cluster forming, use 18 instead.
 %
+% parworkers -- number of parallel workers to use, default = 0 (no
+% parallelization). If a parallel pool is already open, its size will
+% override this argument. If a new pool is opened for MatlabTFCE, it will
+% be closed at the end of script. Opening and closing parallel pools is
+% time consuming so it may be more efficient to do outside the package if
+% one is running several analyses.
+%
 % Output: 
 % If tails == 1, a single output image with the same xyz dimensions as imgs
 % consisting of corrected p-values with be returned.
@@ -116,6 +124,8 @@ H = 2;
 E = .5;
 C = 26;
 dh = .1;
+global parworkers;
+parworkers = 0;
 
 % adjusting optional arguments based on input
 fixedargn = 3;
@@ -148,6 +158,11 @@ end
 if nargin > (fixedargn + 6)
     if ~isempty(varargin{7})
         dh = varargin{7};
+    end
+end
+if nargin > (fixedargn + 7)
+    if ~isempty(varargin{8})
+        parworkers = varargin{8};
     end
 end
 
@@ -241,11 +256,27 @@ elseif strcmp(analysis,'regression')
     end  
 end
 
+% check if parallel pool exists; use it if it does, create it if not (but
+% is requested).
+pp = gcp('nocreate');
+try 
+    parworkers = pp.NumWorkers;
+    parexist = 1;
+    warning('Existing parallel pool discovered with %d workers. Overriding parworkers argument to use this pool.',parworkers);
+catch
+    parexist = 0;
+    if parworkers > 0
+        parpool(parworkers);
+    end
+end
+
 %% analysis calls
 
 % indicate analysis start
 fprintf('Starting %i-tailed %s analysis...\n',[tails,analysis]);
+fprintf('MatlabTFCE started at %s \n',datestr(datetime('now')));
 fprintf('Permuting data from %i subjects %i times\n',[nsub,nperm])
+
 
 % select appropriate analysis
 switch analysis
@@ -317,7 +348,12 @@ else
     varargout{1} = pcorr_pos;
     varargout{2} = pcorr_neg;
 end
-fprintf('Permutation TFCE complete!\n');
+fprintf('Permutation complete!\n');
+fprintf('MatlabTFCE finished at %s \n',datestr(datetime('now')));
 
+%% clean up parallel pool if created in-script
+if ~parexist
+    delete(gcp('nocreate'));
+end
 end
 
