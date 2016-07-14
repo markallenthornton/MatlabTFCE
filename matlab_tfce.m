@@ -296,7 +296,7 @@ end
 
 % indicate analysis start
 fprintf('Starting %i-tailed %s analysis...\n',[tails,analysis]);
-fprintf('MatlabTFCE started at %s \n',datestr(datetime('now')));
+fprintf('MatlabTFCE started at %s \n',datestr(now));
 fprintf('Permuting data from %i subjects %i times\n',[nsub,nperm])
 
 
@@ -371,7 +371,7 @@ else
     varargout{2} = pcorr_neg;
 end
 fprintf('Permutation complete!\n');
-fprintf('MatlabTFCE finished at %s \n',datestr(datetime('now')));
+fprintf('MatlabTFCE finished at %s \n',datestr(now));
 
 %% clean up parallel pool if created in-script
 if ~parexist
