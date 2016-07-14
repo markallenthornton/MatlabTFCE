@@ -25,10 +25,10 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 % corrections, is substantially less conservative due to the fact that
 % it capitalizes on spatial dependency in the data. 
 %
-% [varargout] = matlab_tfce(analysis,tails,imgs,imgs2,covariate,nperm,H,E,C,dh,parworkers)
-% [pcorr] = matlab_tfce(analysis,1,imgs,imgs2,covariate,nperm,H,E,C,dh,parworkers)
-% [pcorr_pos,pcorr_neg] = matlab_tfce(analysis,2,imgs,imgs2,covariate,nperm,H,E,C,dh,parworkers)
-% [pcorr_fac1,pcorr_fac2,pcorr_int] = matlab_tfce(analysis,1,imgs,imgs2,covariate,nperm,H,E,C,dh,parworkers)
+% [varargout] = matlab_tfce(analysis,tails,imgs,imgs2,covariate,nperm,H,E,C,dh,parworkers,nuisance)
+% [pcorr] = matlab_tfce(analysis,1,imgs,imgs2,covariate,nperm,H,E,C,dh,parworkers,nuisance)
+% [pcorr_pos,pcorr_neg] = matlab_tfce(analysis,2,imgs,imgs2,covariate,nperm,H,E,C,dh,parworkers,nuisance)
+% [pcorr_fac1,pcorr_fac2,pcorr_int] = matlab_tfce(analysis,1,imgs,imgs2,covariate,nperm,H,E,C,dh,parworkers,nuisance)
 %
 % Arguments:
 %
@@ -89,6 +89,14 @@ function [varargout] = matlab_tfce(analysis,tails,imgs,varargin)
 % time consuming so it may be more efficient to do outside the package if
 % one is running several analyses.
 %
+% nuisance -- commandline-only argument for specifying which variables in
+% a multiple regression are nuisance regressors. Accepts a (1 x predictor)
+% binary (0/1 true/false) vector. 1s/trues indicate variables that should
+% be treated as nuisance predictors (vs. variables of interest). These
+% variables will be included in the model, but will not be subjected to
+% TFCE, accelerating calculations. Default is all 0s (i.e. all variables
+% treated as of non-nuisance). Ignorned if analysis not regression.
+%
 % Output: 
 % If tails == 1, a single output image with the same xyz dimensions as imgs
 % consisting of corrected p-values with be returned.
@@ -135,6 +143,7 @@ end
 if nargin > (fixedargn + 1)
     covariate = varargin{2};
 end
+nuisance = zeros([1 size(covariate,2)]);
 if nargin > (fixedargn + 2)
     if ~isempty(varargin{3})
         nperm = varargin{3};
@@ -163,6 +172,11 @@ end
 if nargin > (fixedargn + 7)
     if ~isempty(varargin{8})
         parworkers = varargin{8};
+    end
+end
+if nargin > (fixedargn + 8)
+    if ~isempty(varargin{9})
+        nuisance = varargin{9};
     end
 end
 
@@ -270,6 +284,14 @@ catch
     end
 end
 
+% check nuisance
+if strcmp(analysis,'regression')
+    ns = size(nuisance);
+    if ~isequal(ns,[1 size(covariate,2)])
+        error('nuisance size does not equal predictor number');
+    end
+end
+
 %% analysis calls
 
 % indicate analysis start
@@ -325,9 +347,9 @@ switch analysis
     % multiple regression 
     case 'regression'
         if tails == 1
-            pcorr = matlab_tfce_regression(imgs,covariate,tails,nperm,H,E,C,dh);
+            pcorr = matlab_tfce_regression(imgs,covariate,tails,nperm,H,E,C,dh,nuisance);
         else
-            [pcorr_pos,pcorr_neg] = matlab_tfce_regression(imgs,covariate,tails,nperm,H,E,C,dh);
+            [pcorr_pos,pcorr_neg] = matlab_tfce_regression(imgs,covariate,tails,nperm,H,E,C,dh,nuisance);
         end
         
     % unrecognized analysis input

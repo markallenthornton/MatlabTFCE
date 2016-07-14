@@ -1,4 +1,4 @@
-function [varargout] = matlab_tfce_regression(imgs,preds,tails,nperm,H,E,C,dh)
+function [varargout] = matlab_tfce_regression(imgs,preds,tails,nperm,H,E,C,dh,nuisance)
 % MATLAB_TFCE_REGRESSION computes TFCE corrected p-values for each
 % parameter in a multiple regression
 %
@@ -14,6 +14,8 @@ function [varargout] = matlab_tfce_regression(imgs,preds,tails,nperm,H,E,C,dh)
 %   -- E extent exponent
 %   -- C connectivity
 %   -- ndh step number for cluster formation
+%   -- nuisance specifies which variables are not of interest
+%   -- omnibusf requests overall model significance test
 %
 %   Output:
 %	If tails == 1:
@@ -112,15 +114,17 @@ parfor(p = 1:nperm,parworkers)
     rtstats = bs./serr;
     curexceeds = zeros(nvox,npred);
     for i = 1:npred
-        rbrain=NaN(bsize);
-        rbrain(implicitmask) = rtstats(i,:);
-        rbrain = transform(rbrain,H,E,C,dh);
-        rstats = rbrain(implicitmask);
-        if tails == 2
-            rstats = abs(rstats);
-        end  
-        % compare maxima to t-values and increment as appropriate
-        curexceeds(:,i) = max(rstats) >= tvals(i,:);
+        if ~nuisance(i)
+            rbrain=NaN(bsize);
+            rbrain(implicitmask) = rtstats(i,:);
+            rbrain = transform(rbrain,H,E,C,dh);
+            rstats = rbrain(implicitmask);
+            if tails == 2
+                rstats = abs(rstats);
+            end  
+            % compare maxima to t-values and increment as appropriate
+            curexceeds(:,i) = max(rstats) >= tvals(i,:);
+        end
     end
     exceedances = exceedances + curexceeds;
     
@@ -139,28 +143,38 @@ else
 end
 
 for i = 1:npred
-    % create corrected p-value image
-    corrected = exceedances(:,i)./nperm;
-    pcorr = ones(bsize);
-    pcorr(implicitmask) = corrected;
+    if ~nuisance(i)
+        % create corrected p-value image
+        corrected = exceedances(:,i)./nperm;
+        pcorr = ones(bsize);
+        pcorr(implicitmask) = corrected;
 
-    % split into positive and negative effects (if needed)
-    if tails == 2
-        btruestat = NaN(bsize);
-        btruestat(implicitmask) = truestat(i,:);
-        pos = btruestat>0;
-        pcorr_pos = pcorr;
-        pcorr_pos(~pos) = 1;
-        pcorr_neg = pcorr;
-        pcorr_neg(pos) = 1;
-    end
+        % split into positive and negative effects (if needed)
+        if tails == 2
+            btruestat = NaN(bsize);
+            btruestat(implicitmask) = truestat(i,:);
+            pos = btruestat>0;
+            pcorr_pos = pcorr;
+            pcorr_pos(~pos) = 1;
+            pcorr_neg = pcorr;
+            pcorr_neg(pos) = 1;
+        end
 
-    % assign to cormaps
-    if tails == 1
-        cormaps{i} = pcorr;
+        % assign to cormaps
+        if tails == 1
+            cormaps{i} = pcorr;
+        else
+            cormaps_pos{i} = pcorr_pos;
+            cormaps_neg{i} = pcorr_neg;
+        end
     else
-        cormaps_pos{i} = pcorr_pos;
-        cormaps_neg{i} = pcorr_neg;
+        % assign to cormaps
+        if tails == 1
+            cormaps{i} = NaN;
+        else
+            cormaps_pos{i} = NaN;
+            cormaps_neg{i} = NaN;
+        end
     end
 end
 
