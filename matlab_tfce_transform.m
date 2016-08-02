@@ -31,7 +31,7 @@ for h = 1:ndh
     vals = vals + curvals;
 end
 tfced = NaN(size(img));
-tfced(:) = vals;
+tfced(:) = vals.*dh;
 
 end
 
