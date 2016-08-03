@@ -6,7 +6,7 @@ function [tfced] = matlab_tfce_transform(img,H,E,C,dh)
 %   -- H height exponent
 %   -- E extent exponent
 %   -- C connectivity
-%   -- ndh step number for cluster formation
+%   -- dh size of steps for cluster formation
 
 % set cluster thresholds
 threshs = 0:dh:max(img(:));
