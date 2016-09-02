@@ -115,7 +115,7 @@ anafig = figure('Name','MatlabTFCE',...
                       'Toolbar','none', ...
                       'NumberTitle','off', ...
                       'Resize', 'off', ...
-                      'Position',[450,450,220,420]); %X,Y then Width, Height
+                      'Position',[450,450,220,470]); %X,Y then Width, Height
 set(anafig, 'Color', ([128,0,0] ./255)); 
 yp = 20;
 
@@ -154,11 +154,11 @@ uipanel('Title','Size of parallel pool',...
 yp = 15;
 
 % ui controls
-u1 = uicontrol('Style','edit','HorizontalAlignment','left','String','new_contrast','Position',[50,350+yp,120,20]);
+u1 = uicontrol('Style','edit','HorizontalAlignment','left','String','new_contrast','Position',[50,400+yp,120,20]);
 if inctails
-    u2 = uicontrol('Style','popupmenu','HorizontalAlignment','left','String',{'1','2'},'Position',[50,300+yp,120,20]);
+    u2 = uicontrol('Style','popupmenu','HorizontalAlignment','left','String',{'1','2'},'Position',[50,350+yp,120,20]);
 else
-    u2 = uicontrol('Style','popupmenu','HorizontalAlignment','left','String',{'1'},'Position',[50,300+yp,120,20]);
+    u2 = uicontrol('Style','popupmenu','HorizontalAlignment','left','String',{'1'},'Position',[50,350+yp,120,20]);
 end
 u3 = uicontrol('Style','edit','HorizontalAlignment','left','String','5000','Position',[50,300+yp,120,20]);
 u4 = uicontrol('Style','edit','HorizontalAlignment','left','String','2','Position',[50,250+yp,120,20]);
