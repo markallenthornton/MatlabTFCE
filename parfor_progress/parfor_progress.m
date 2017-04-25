@@ -32,6 +32,9 @@ function percent = parfor_progress(N)
 %   See also PARFOR.
 
 % By Jeremy Scheff - jdscheff@gmail.com - http://www.jeremyscheff.com/
+% Updated Ben George - ben.george@oncology.ox.ac.uk
+%	Added start and estimated end time to display
+
 narginchk(0, 1);
 
 if nargin < 1
@@ -40,47 +43,66 @@ end
 
 percent = 0;
 w = 50; % Width of progress bar
+tn = now; % Time now
 
 if N > 0
-    f = fopen(fullfile(tempdir,'parfor_progress.bin'), 'w');
+    f = fopen('parfor_progress.txt', 'w');
     if f<0
-    error('Do you have write permissions for %s?', pwd);
+        error('Do you have write permissions for %s?', pwd);
     end
-    fwrite(f,N,'uint32');
-    fwrite(f,0,'uint32');
+    fprintf(f, '%5.8f\n%5.8f\n', N, tn); % Save N and t at the top of progress.txt
     fclose(f);
     
+    time_fmt = 'dd-mm HH:MM:SS';
+    t_start = datestr(now, time_fmt);
+    
+    %waitbar(0, 'Progress');
     if nargout == 0
-        disp(['  0%[>', repmat(' ', 1, w), ']']);
+        disp(['  0%[>', repmat(' ', 1, w), ']', ' ', t_start, ' -> ', time_fmt]);
     end
 elseif N == 0
-    delete(fullfile(tempdir,'parfor_progress.bin')); 
+    f = fopen('parfor_progress.txt', 'r');
+    progress = fscanf(f, '%f');
+    fclose(f);
+    try
+        delete('parfor_progress.txt');
+    catch
+    end
     percent = 100;
     
+    time_fmt = 'dd-mm HH:MM:SS';
+    t_start = datestr(progress(2), time_fmt);
+    t_end = datestr(now, time_fmt);
+    
     if nargout == 0
-        disp([repmat(char(8), 1, (w+9)), char(10), '100%[', repmat('=', 1, w+1), ']']);
+        disp([repmat(char(8), 1, (w+9+33)), char(10), '100%[', repmat('=', 1, w+1), ']', ' ', t_start, ' -> ', t_end]);
     end
+    %h = findall(0,'Tag','TMWWaitbar');
+    %close(h);
 else
-    fname = fullfile(tempdir,'parfor_progress.bin');
-    if ~exist(fname, 'file')
-        error('parfor_progress.bin not found. Run PARFOR_PROGRESS(N) before PARFOR_PROGRESS to initialize parfor_progress.bin.');
+    if ~exist('parfor_progress.txt', 'file')
+        error('parfor_progress.txt not found. Run PARFOR_PROGRESS(N) before PARFOR_PROGRESS to initialize parfor_progress.txt.');
     end
     
-    f = fopen(fname, 'r+');
-    A = fread(f,2,'uint32');
-    todo = A(1);
-    progress = A(2) + 1;
-    fseek(f, 4, 'bof');
-    fwrite(f,progress,'uint32');
+    f = fopen('parfor_progress.txt', 'a');
+    fprintf(f, '%5.8f\n', tn);
     fclose(f);
     
-    percent = progress/todo * 500;
-    if percent > 100
-        percent = 0;
-    end
+    f = fopen('parfor_progress.txt', 'r');
+    progress = fscanf(f, '%f');
+    fclose(f);
+    percent = (length(progress)-2)/progress(1)*100;
+    
+    % Caclaulated elased time
+    t1 = progress(2);
+    time_fmt = 'dd-mm HH:MM:SS';
+    t_start = datestr(progress(2), time_fmt);
+    t_estend = datestr((((tn-t1)/percent) * 100) + t1, time_fmt);
     
     if nargout == 0
         perc = sprintf('%3.0f%%', percent); % 4 characters wide, percentage
-        disp([repmat(char(8), 1, (w+9)), char(10), perc, '[', repmat('=', 1, round(percent*w/100)), '>', repmat(' ', 1, w - round(percent*w/100)), ']']);
+        disp([repmat(char(8), 1, w+9+33), char(10), perc, '[', repmat('=', 1, round(percent*w/100)), '>', repmat(' ', 1, w - round(percent*w/100)), ']', ' ', t_start, ' -> ', t_estend]);
     end
+    %h = findall(0,'Tag','TMWWaitbar');
+    %waitbar(percent/100, h);
 end
