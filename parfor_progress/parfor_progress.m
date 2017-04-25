@@ -91,7 +91,7 @@ else
     f = fopen('parfor_progress.txt', 'r');
     progress = fscanf(f, '%f');
     fclose(f);
-    percent = (length(progress)-2)/progress(1)*100;
+    percent = (length(progress)-2)/progress(1)*500;
     
     % Caclaulated elased time
     t1 = progress(2);
