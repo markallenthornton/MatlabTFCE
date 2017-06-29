@@ -1,6 +1,8 @@
 function [varargout] = matlab_tfce_correlation(imgs,covariate,tails,nperm,H,E,C,dh)
 % MATLAB_TFCE_CORRELATION computes TFCE corrected p-values for
 % individual difference correlation between a covariate and brain activity.
+% Note that actual inference is performed on Fisher r-to-z transforms of
+% the Pearson correlation coefficents for linearity.
 %
 %   Arguments:
 %   imgs -- a 4D (x,y,z,subject) matrix of images.
@@ -49,6 +51,7 @@ end
 
 % calculate true correlation image
 truestat = corr(occimgs,covariate);
+truestat =.5*log((1+truestat)./(1-truestat));
 trueimg=NaN(bsize);
 trueimg(implicitmask) = truestat;
 trueimg = transform(trueimg,H,E,C,dh);
@@ -72,6 +75,7 @@ parfor(p = 1:nperm,parworkers)
     
     % calculate permutation correlations
     rstats = corr(occimgs,rcov);
+    rstats =.5*log((1+rstats)./(1-rstats));
     rbrain = zeros(bsize);
     rbrain(implicitmask) = rstats;
     rbrain = transform(rbrain,H,E,C,dh);

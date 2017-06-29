@@ -43,8 +43,8 @@ fp = NaN(nsim,1);
 for i = 1:nsim
     imgs = randn(4,4,4,20);
     covariate = randn(20,1);
-    pcorr = matlab_tfce('correlation',1,imgs,[],covariate);
-    fp(i) = sum(pcorr(:)<.05)+sum(pcorr(:)<.05);
+    pcorr = matlab_tfce('correlation',1,imgs,[],covariate,500);
+    fp(i) = sum(pcorr(:)<.05);
 end
 sum(fp)/nsim % false positive rate
 
