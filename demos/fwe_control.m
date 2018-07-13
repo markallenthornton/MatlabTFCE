@@ -1,6 +1,6 @@
 % fwe_control.m
 % demo of package's control over familywise error rate
-nsim = 1000;
+nsim = 100;
 %% one sample ttest, one-sided
 fp = NaN(nsim,1);
 for i = 1:nsim
@@ -8,7 +8,7 @@ for i = 1:nsim
     pcorr = matlab_tfce('onesample',1,imgs);
     fp(i) = sum(pcorr(:)<.05);
 end
-sum(fp)/nsim % false positive rate
+sum(fp>0)/nsim % false positive rate
 
 %% one sample ttest, two-sided
 fp = NaN(nsim,1);
@@ -17,7 +17,7 @@ for i = 1:nsim
     [pcorr_pos,pcorr_neg] = matlab_tfce('onesample',2,imgs);
     fp(i) = sum(pcorr_pos(:)<.05)+sum(pcorr_neg(:)<.05);
 end
-sum(fp)/nsim % false positive rate
+sum(fp>0)/nsim % false positive rate
 
 %% independent sample ttest, one-sided
 fp = NaN(nsim,1);
@@ -27,7 +27,7 @@ for i = 1:nsim
     [pcorr_pos] = matlab_tfce('independent',1,imgs,imgs2);
     fp(i) = sum(pcorr_pos(:)<.05)+sum(pcorr_neg(:)<.05);
 end
-sum(fp)/nsim % false positive rate
+sum(fp>0)/nsim % false positive rate
 
 %% independent sample ttest, two-sided
 fp = NaN(nsim,1);
@@ -37,7 +37,7 @@ for i = 1:nsim
     [pcorr_pos,pcorr_neg] = matlab_tfce('independent',2,imgs,imgs2);
     fp(i) = sum(pcorr_pos(:)<.05)+sum(pcorr_neg(:)<.05);
 end
-sum(fp)/nsim % false positive rate
+sum(fp>0)/nsim % false positive rate
 %% correlation, one-sided
 fp = NaN(nsim,1);
 for i = 1:nsim
@@ -46,7 +46,7 @@ for i = 1:nsim
     pcorr = matlab_tfce('correlation',1,imgs,[],covariate,500);
     fp(i) = sum(pcorr(:)<.05);
 end
-sum(fp)/nsim % false positive rate
+sum(fp>0)/nsim % false positive rate
 
 %% correlation, two-sided
 fp = NaN(nsim,1);
@@ -56,7 +56,7 @@ for i = 1:nsim
     [pcorr_pos,pcorr_neg] = matlab_tfce('correlation',2,imgs,[],covariate);
     fp(i) = sum(pcorr_pos(:)<.05)+sum(pcorr_neg(:)<.05);
 end
-sum(fp)/nsim % false positive rate
+sum(fp>0)/nsim % false positive rate
 %% one-way ANOVA
 fp = NaN(nsim,1);
 for i = 1:nsim
@@ -64,7 +64,7 @@ for i = 1:nsim
     pcorr = matlab_tfce('rm_anova1',1,imgs);
     fp(i) = sum(pcorr(:)<.05);
 end
-sum(fp)/nsim % false positive rate
+sum(fp>0)/nsim % false positive rate
 %% two-way ANOVA
 fp1 = NaN(nsim,1);
 fp2 = NaN(nsim,1);
@@ -76,9 +76,9 @@ for i = 1:nsim
     fp2(i) = sum(pcorr_fac2(:)<.05);
     fpi(i) = sum(pcorr_int(:)<.05);
 end
-sum(fp1)/nsim % false positive rate
-sum(fp2)/nsim % false positive rate
-sum(fpi)/nsim % false positive rate
+sum(fp1>0)/nsim % false positive rate
+sum(fp2>0)/nsim % false positive rate
+sum(fpi>0)/nsim % false positive rate
 
 %% multiple regression
 fp = NaN(nsim,5);
@@ -90,4 +90,4 @@ for i = 1:nsim
         fp(i,j) = sum(pcorr_pos{j}(:)<.05)+sum(pcorr_neg{j}(:)<.05);
     end
 end
-sum(fp)/nsim
+sum(fp>0)/nsim
