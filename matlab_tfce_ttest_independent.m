@@ -39,7 +39,7 @@ else
 end
 
 % calculate true mean image
-truestat = (mean(imgs1,4)-mean(imgs2,4))./sqrt(var(imgs1,0,4)/nsub1+var(imgs2,0,4)/nsub1);
+truestat = (mean(imgs1,4)-mean(imgs2,4))./sqrt(var(imgs1,0,4)/nsub1+var(imgs2,0,4)/nsub2);
 implicitmask = ~isnan(truestat);
 tfcestat = transform(truestat,H,E,C,dh);
 
